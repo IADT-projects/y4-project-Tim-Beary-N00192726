@@ -7,7 +7,14 @@ library(tidyr)
 library(geomtextpath)
 library(dplyr)
 
+install.packages("bslib")
 
+team_standard <- fb_big5_advanced_season_stats(
+  season_end_year = 2023, stat_type = "standard", team_or_player = "team"
+)
+
+team_standard_filtered <- team_standard |>
+  filter(Team_or_Opponent == "team")
 
 player_standard <- fb_big5_advanced_season_stats(
   season_end_year = 2023, stat_type = "standard", team_or_player = "player"
@@ -207,10 +214,11 @@ class(complete_scouting_reports$Value)
 
 complete_scouting_reports$percentile <- complete_scouting_reports$percentile * 100
 
-# Define UI for application that draws a histogram
-ui <- navbarPage("Football Application",
+ui <- navbarPage(
+  theme = bs_theme(version = 4, bootswatch = "sandstone"),
+                 "Football Application",
                  tabPanel(
-                   "Player/Team Scatter Plots",
+                   "Player Scatter Plots",
                    
                    titlePanel("Football Players Scatter Plot"),
                    
@@ -227,15 +235,43 @@ ui <- navbarPage("Football Application",
                                    selected = NULL),
                        radioButtons("radio", "Stat Type:", 
                                     choices = c("Totals", "Per 90s")),
+                       sliderInput(inputId = "slider", label = "Minutes",
+                                   min = 1, max = max(player_combined_df$Min_Playing), value = c(450, max(player_combined_df$Min_Playing))),
                        actionButton("submit", "Submit")
                      ),
                      
                      mainPanel(
-                       plotlyOutput("scatterPlotPlayers")
+                         tabPanel("playerPlot", plotlyOutput("scatterPlotPlayers"))
                      )
                    )
                    
                  ), 
+  tabPanel(
+    "Team Scatter Plots",
+    
+    titlePanel("Football Players Scatter Plot"),
+    
+    sidebarLayout(
+      sidebarPanel(
+        selectInput("Comp1", "Select League:",
+                    unique(team_standard_filtered$Comp),
+                    selected = NULL),
+        selectInput("x1", "Select x axis:",
+                    c(colnames(team_standard_filtered)),
+                    selected = NULL),
+        selectInput("y1", "Select y axis:",
+                    c(colnames(team_standard_filtered)),
+                    selected = NULL),
+        actionButton("submit2", "Submit")
+      ),
+      
+      mainPanel(
+          tabPanel("teamPlot", plotlyOutput("scatterPlotTeams")), 
+      )
+    )
+    
+  ), 
+  
                  tabPanel("Player Pizza Chart", 
                           
                           sidebarLayout(
@@ -257,10 +293,16 @@ server <- function(input, output) {
   
   selected_comp_players <- reactive({
     if (input$radio == "Totals") {
-      player_combined_df[player_combined_df$Comp == input$Comp, ]
+      player_combined_df[player_combined_df$Comp == input$Comp, ] |>
+        filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
     } else {
-      players_per90[players_per90$Comp == input$Comp, ]
+      players_per90[players_per90$Comp == input$Comp, ] |>
+        filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
     }
+  })
+  
+  selected_comp_teams <- reactive({
+      team_standard_filtered[team_standard_filtered$Comp == input$Comp1, ]
   })
   
   observeEvent(input$submit, {
@@ -278,7 +320,24 @@ server <- function(input, output) {
     ggplotly(p, tooltip = c("text","x", "y"))
     
   })
+  })
   
+  observeEvent(input$submit2, {
+    
+    output$scatterPlotTeams <- renderPlotly({
+      
+      
+      
+      p <- ggplot(selected_comp_teams(), aes_string(x = input$x1, y = input$y1, text = "Squad")) +
+        geom_point() +
+        ggtitle("Football Scatter Plot") +
+        xlab(input$x1) +
+        ylab(input$y1)
+      
+      ggplotly(p, tooltip = c("text","x", "y"))
+      
+    })
+    
   })
   
   observeEvent(input$submit1, {
