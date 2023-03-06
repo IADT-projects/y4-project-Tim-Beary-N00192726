@@ -225,6 +225,8 @@ ui <- navbarPage("Football Application",
                        selectInput("y", "Select y axis:",
                                    c(colnames(player_combined_df)),
                                    selected = NULL),
+                       radioButtons("radio", "Stat Type:", 
+                                    choices = c("Totals", "Per 90s")),
                        actionButton("submit", "Submit")
                      ),
                      
@@ -254,7 +256,11 @@ server <- function(input, output) {
   
   
   selected_comp_players <- reactive({
-    player_combined_df[player_combined_df$Comp == input$Comp, ]
+    if (input$radio == "Totals") {
+      player_combined_df[player_combined_df$Comp == input$Comp, ]
+    } else {
+      players_per90[players_per90$Comp == input$Comp, ]
+    }
   })
   
   observeEvent(input$submit, {
