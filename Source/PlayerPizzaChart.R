@@ -27,7 +27,7 @@ player_shooting$index <- 1:nrow(player_shooting)
 player_shooting_filtered <- player_shooting |>
   select(index, Sh_Standard,SoT_Standard, G_per_Sh_Standard, G_per_SoT_Standard, npxG_per_Sh_Expected, )
 
-player_passing <- load_fb_big5_advanced_season_stats(
+player_passing <- fb_big5_advanced_season_stats(
   season_end_year = 2023, stat_type = "passing", team_or_player = "player"
 )
 
@@ -36,7 +36,7 @@ player_passing$index <- 1:nrow(player_passing)
 player_passing_filtered <- player_passing |>
   select(index,Att_Total, Cmp_percent_Total, xA,  Final_Third, PPA, CrsPA)
 
-player_gsca <- load_fb_big5_advanced_season_stats(
+player_gsca <- fb_big5_advanced_season_stats(
   season_end_year = 2023, stat_type = "gca", team_or_player = "player"
 )
 
@@ -45,7 +45,7 @@ player_gsca$index <- 1:nrow(player_gsca)
 player_gsca_filtered <- player_gsca |>
   select(index, SCA_SCA, GCA_GCA)
 
-player_defense <- load_fb_big5_advanced_season_stats(
+player_defense <- fb_big5_advanced_season_stats(
   season_end_year = 2023, stat_type = "defense", team_or_player = "player"
 )
 
@@ -54,7 +54,7 @@ player_defense$index <- 1:nrow(player_defense)
 player_defense_filtered <- player_defense |>
   select(index, TklW_Tackles, Blocks_Blocks, Int, `Tkl+Int`,Clr, Tkl_Challenges, Tkl_percent_Challenges)
 
-player_possession <- load_fb_big5_advanced_season_stats(
+player_possession <- fb_big5_advanced_season_stats(
   season_end_year = 2023, stat_type = "possession", team_or_player = "player"
 )
 
@@ -63,7 +63,7 @@ player_possession$index <- 1:nrow(player_possession)
 player_possession_filtered <- player_possession |>
   select(index, Touches_Touches,`Att 3rd_Touches`, Att_Take, Succ_Take, Succ_percent_Take,Carries_Carries, Final_Third_Carries, CPA_Carries)
 
-player_misc <- load_fb_big5_advanced_season_stats(
+player_misc <- fb_big5_advanced_season_stats(
   season_end_year = 2023, stat_type = "misc", team_or_player = "player"
 )
 
@@ -77,11 +77,6 @@ player_combined_df = list(player_standard_filtered, player_shooting_filtered, pl
 
 player_combined_df <- player_combined_df |>
   reduce(right_join, by='index')
-
-player_combined_df <- player_combined_df |>
-  mutate_at(vars(11:49), ~( . / Min_Playing) * 90 ) |>
-  mutate_at(vars(11:49), round, 2)
-
 
 
 
@@ -109,14 +104,16 @@ player_combined_df$Position <- ifelse(player_combined_df$Position == "Centre-For
 player_combined_df$Position <- ifelse(player_combined_df$Position == "Left Winger" | player_combined_df$Position == "Right Winger", "Winger", player_combined_df$Position)
 player_combined_df$Position <- ifelse(player_combined_df$Position == "Left Midfield" | player_combined_df$Position == "Right Midfield", "Winger", player_combined_df$Position)
 
+players_per90 <- player_combined_df |>
+  mutate_at(vars(11:49), ~( . / Min_Playing) * 90 ) |>
+  mutate_at(vars(11:49), round, 2)
 
-
-forwards_stats <- player_combined_df |>
+forwards_stats <- players_per90 |>
   filter(Position == "Forward") |>
   filter(Min_Playing >= 450) |>
   gather(Statistic, Value, -Name, -Position)
 
-forwards_percentiles <- player_combined_df |>
+forwards_percentiles <- players_per90 |>
   filter(Position == "Forward") |>
   filter(Min_Playing >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
@@ -129,12 +126,12 @@ forwards_scouting_reports <- merge(forwards_stats, forwards_percentiles[, c("per
 
 forwards_scouting_reports <- filter(forwards_scouting_reports, Statistic != "index", Statistic != "Squad", Statistic != "Comp", Statistic != "Nation", Statistic != "Url")
 
-midfielders_stats <- player_combined_df |>
+midfielders_stats <- players_per90 |>
   filter(Position == "Midfield") |>
   filter(Min_Playing >= 450) |>
   gather(Statistic, Value, -Name, -Position)
 
-midfielders_percentiles <- player_combined_df |>
+midfielders_percentiles <- players_per90 |>
   filter(Position == "Midfield") |>
   filter(Min_Playing >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
@@ -147,12 +144,12 @@ midfielders_scouting_reports <- merge(midfielders_stats, midfielders_percentiles
 
 midfielders_scouting_reports <- filter(midfielders_scouting_reports, Statistic != "index", Statistic != "Squad", Statistic != "Comp", Statistic != "Nation", Statistic != "Url")
 
-centrebacks_stats <- player_combined_df |>
+centrebacks_stats <- players_per90 |>
   filter(Position == "Centre-Back") |>
   filter(Min_Playing >= 450) |>
   gather(Statistic, Value, -Name, -Position)
 
-centrebacks_percentiles <- player_combined_df |>
+centrebacks_percentiles <- players_per90 |>
   filter(Position == "Centre-Back") |>
   filter(Min_Playing >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
@@ -165,12 +162,12 @@ centrebacks_scouting_reports <- merge(centrebacks_stats, centrebacks_percentiles
 
 centrebacks_scouting_reports <- filter(centrebacks_scouting_reports, Statistic != "index", Statistic != "Squad", Statistic != "Comp", Statistic != "Nation", Statistic != "Url")
 
-fullbacks_stats <- player_combined_df |>
+fullbacks_stats <- players_per90 |>
   filter(Position == "Full-Back") |>
   filter(Min_Playing >= 450) |>
   gather(Statistic, Value, -Name, -Position)
 
-fullbacks_percentiles <- player_combined_df |>
+fullbacks_percentiles <- players_per90 |>
   filter(Position == "Full-Back") |>
   filter(Min_Playing >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
@@ -183,12 +180,12 @@ fullbacks_scouting_reports <- merge(fullbacks_stats, fullbacks_percentiles[, c("
 
 fullbacks_scouting_reports <- filter(fullbacks_scouting_reports, Statistic != "index", Statistic != "Squad", Statistic != "Comp", Statistic != "Nation", Statistic != "Url")
 
-wingers_attmids_stats <- player_combined_df |>
+wingers_attmids_stats <- players_per90 |>
   filter(Position == "Winger" | Position == "Attacking Midfield") |>
   filter(Min_Playing >= 450) |>
   gather(Statistic, Value, -Name, -Position)
 
-wingers_attmids_percentiles <- player_combined_df |>
+wingers_attmids_percentiles <- players_per90 |>
   filter(Position == "Winger" | Position == "Attacking Midfield") |>
   filter(Min_Playing >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
@@ -212,7 +209,9 @@ complete_scouting_reports$percentile <- complete_scouting_reports$percentile * 1
 
 
 
-ui <- fluidPage(
+ui <- navbarPage("Football Application",
+                 tabPanel(
+                   "Players Pizza Charts",
   titlePanel("Player Scouting Report"),
   
   sidebarLayout(
@@ -227,6 +226,7 @@ ui <- fluidPage(
       plotOutput("radarChart")
     )
   )
+)
 )
 
 
