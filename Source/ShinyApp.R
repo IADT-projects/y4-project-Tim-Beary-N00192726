@@ -6,8 +6,9 @@ library(ggshakeR)
 library(tidyr)
 library(geomtextpath)
 library(dplyr)
+library(plotly)
 
-install.packages("bslib")
+# install.packages("bslib")
 
 team_standard <- fb_big5_advanced_season_stats(
   season_end_year = 2023, stat_type = "standard", team_or_player = "team"
@@ -225,7 +226,7 @@ ui <- navbarPage(
                    sidebarLayout(
                      sidebarPanel(
                        selectInput("Comp", "Select League:",
-                                   unique(player_combined_df$Comp),
+                                   c("All", player_combined_df$Comp),
                                    selected = NULL),
                        selectInput("x", "Select x axis:",
                                    c(colnames(player_combined_df)),
@@ -293,11 +294,21 @@ server <- function(input, output) {
   
   selected_comp_players <- reactive({
     if (input$radio == "Totals") {
-      player_combined_df[player_combined_df$Comp == input$Comp, ] |>
+      if(input$Comp == "All") {
+      player_combined_df |>
         filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      } else {
+        player_combined_df[player_combined_df$Comp == input$Comp, ] |>
+          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      }
     } else {
-      players_per90[players_per90$Comp == input$Comp, ] |>
-        filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      if(input$Comp == "All") {
+        players_per90 |>
+          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      } else {
+        players_per90[players_per90$Comp == input$Comp, ] |>
+          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      }
     }
   })
   
@@ -330,6 +341,7 @@ server <- function(input, output) {
       
       p <- ggplot(selected_comp_teams(), aes_string(x = input$x1, y = input$y1, text = "Squad")) +
         geom_point() +
+        geom_text(aes(label = selected_comp_teams()$Squad), hjust = 0, vjust = 0, nudge_x = 0.3, nudge_y = 0.3) +
         ggtitle("Football Scatter Plot") +
         xlab(input$x1) +
         ylab(input$y1)
