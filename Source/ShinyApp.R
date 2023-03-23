@@ -7,6 +7,8 @@ library(tidyr)
 library(geomtextpath)
 library(dplyr)
 library(plotly)
+library(DT)
+library(bslib)
 
 # install.packages("bslib")
 
@@ -225,6 +227,9 @@ ui <- navbarPage(
                    
                    sidebarLayout(
                      sidebarPanel(
+                       selectInput("Position", "Select Positions:",
+                                   c("All", player_combined_df$Position),
+                                   selected = NULL),
                        selectInput("Comp", "Select League:",
                                    c("All", player_combined_df$Comp),
                                    selected = NULL),
@@ -242,8 +247,10 @@ ui <- navbarPage(
                      ),
                      
                      mainPanel(
-                         tabPanel("playerPlot", plotlyOutput("scatterPlotPlayers"))
-                     )
+                         tabPanel("playerPlot", plotlyOutput("scatterPlotPlayers")),
+                         tabPanel("dataTable", DT::dataTableOutput('dt1')),
+                     ),
+                     
                    )
                    
                  ), 
@@ -277,14 +284,25 @@ ui <- navbarPage(
                           
                           sidebarLayout(
                             sidebarPanel(
+                              selectInput("position", "Select Position:",
+                                          c(complete_scouting_reports$Position),
+                                          selected = NULL),
                               selectInput("player", "Select Player:",
                                           unique(complete_scouting_reports$Name),
                                           selected = NULL),
-                              actionButton("submit1", "Submit")
+                              checkboxInput(inputId = "multi_select", label = "Compare Players", value = FALSE),
+                              conditionalPanel(
+                                condition = "input.multi_select == true",
+                                selectInput("player_comparison", "Select Player to compare:",
+                                            unique(complete_scouting_reports$Name),
+                                            selected = NULL),
+                              ),
+                              actionButton("submit1", "Submit"),
                             ),
                             
                             mainPanel(
-                              plotOutput("radarChart")
+                              plotOutput("radarChart"),
+                              plotOutput("comparisonChart")
                             )
                           ))
 )
@@ -294,19 +312,31 @@ server <- function(input, output) {
   
   selected_comp_players <- reactive({
     if (input$radio == "Totals") {
-      if(input$Comp == "All") {
-      player_combined_df |>
-        filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
-      } else {
+      if (input$Comp == "All" & input$Position == "All") {
+        player_combined_df |>
+          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      } else if (input$Comp == "All") {
+        player_combined_df[player_combined_df$Position == input$Position, ] |>
+          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      } else if (input$Postion == "All") {
         player_combined_df[player_combined_df$Comp == input$Comp, ] |>
+          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      } else {
+        player_combined_df[player_combined_df$Comp == input$Comp & player_combined_df$Position == input$Position, ] |>
           filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
       }
     } else {
-      if(input$Comp == "All") {
+      if (input$Comp == "All" & input$Position == "All") {
         players_per90 |>
           filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
-      } else {
+      } else if (input$Comp == "All") {
+        players_per90[players_per90$Position == input$Position, ] |>
+          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      } else if (input$Postion == "All") {
         players_per90[players_per90$Comp == input$Comp, ] |>
+          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+      } else {
+        players_per90[players_per90$Comp == input$Comp & players_per90$Position == input$Position, ] |>
           filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
       }
     }
@@ -330,6 +360,9 @@ server <- function(input, output) {
     
     ggplotly(p, tooltip = c("text","x", "y"))
     
+  })
+  output$dt1 = DT::renderDataTable({
+    selected_comp_players()
   })
   })
   
@@ -356,6 +389,10 @@ server <- function(input, output) {
     
     selected_player <- complete_scouting_reports |>
       filter(Name == input$player)
+  
+
+    compare_player <- complete_scouting_reports |>
+      filter(Name == input$player_comparison)
     
     selected_player <- selected_player[c(6,7,16,8,9,10,21,18,42,28,32,31),]
     selected_player$index <- 1:12
@@ -367,11 +404,20 @@ server <- function(input, output) {
       ))
     selected_player$type <- factor(selected_player$type, levels = c("Attacking", "Possession", "Misc"))
     
+    compare_player <- compare_player[c(6,7,16,8,9,10,21,18,42,28,32,31),]
+    compare_player$index <- 1:12
+    compare_player <- compare_player |>
+      mutate(type = case_when(
+        index %in% 1:4 ~ "Attacking",
+        index %in% 5:8 ~ "Possession",
+        index %in% 9:12 ~ "Misc"
+      ))
+    compare_player$type <- factor(compare_player$type, levels = c("Attacking", "Possession", "Misc"))
+    
     output$radarChart <- renderPlot(
-      width = 700,
-      height = 700,
-      
+
       {
+
         
         color1 <- "red"
           color2 <- "blue"
@@ -414,6 +460,55 @@ server <- function(input, output) {
                 labs(title = selected_player$Name[1],
                      subtitle = "Tim Beary // 2022/2023 Season // Data from Fbref via: worldfootballR", x = NULL, y = NULL)
       })
+    
+    if (input$multi_select && !is.null(input$player_comparison)) {
+    output$comparisonChart <- renderPlot(
+
+      {      
+
+        color1 <- "red"
+          color2 <- "blue"
+            color3 <- "orange"
+              ggplot(data = compare_player, aes(x = reorder(Statistic, index), y = percentile, label= percentile, fill = type)) +
+                # add the bar/pizza slices that are colored
+                geom_bar(data = compare_player, width = 1,
+                         stat = "identity") +
+                scale_y_continuous(limits = c(0, 100)) +
+                # wrap bar chart as around polar center
+                coord_curvedpolar() +
+                # add the background behind each bar (alpha at .5 for slight transparency so the bars standout)
+                # geom_bar(aes(y=100, fill=type), stat="identity", width=1, alpha=0.5) +
+                # add & customize line that border whole pizza
+                geom_hline(yintercept = seq(0, 100, by = 100),
+                           linewidth = 1) +
+                # # add & customize lines between each pizza slice
+                geom_vline(xintercept = seq(.5, 12, by = 1),
+                           linewidth = .5) +
+                # add percentile labels (labels are fill by bar colors) - option 1
+                #geom_label(aes(label=value, fill=type), color = "white", size=2.5, fontface="bold", family = "Comic Sans MS", show.legend = FALSE) +
+                # add percentile labels (labels are choice of fill and color) - option 2
+                geom_label(color = "gray20", fill = "oldlace", size=2.5, fontface="bold", family = "Comic Sans MS", show.legend = FALSE) +
+                # manually set the colors of bars (3 here for each group of stats (scoring, possession, defending))
+                scale_fill_manual(values=c(color1, color2, color3)) +
+                # theme manipulation to customize plot (play around with these!)
+                theme(legend.position = "top",
+                      legend.direction = "horizontal",
+                      legend.title = element_blank(),
+                      legend.text = element_text(colour = "gray20", family = "Comic Sans MS", face = "bold"),
+                      legend.key.size = unit(.5, "cm"),
+                      legend.box.spacing = unit(0, "mm"),
+                      plot.title = element_text(hjust = .5, colour = "gray20", face = "bold", size = 16, family = "Comic Sans MS"),
+                      plot.subtitle = element_text(hjust = .5, colour = "gray20", size = 8, family = "Comic Sans MS"),
+                      panel.grid = element_blank(),
+                      axis.text.y = element_blank(),
+                      axis.ticks = element_blank(),
+                      axis.title = element_blank(),
+                      axis.text.x = element_text(face = "bold", size = 10, family = "Comic Sans MS")) +
+                labs(title = compare_player$Name[1],
+                     subtitle = "Tim Beary // 2022/2023 Season // Data from Fbref via: worldfootballR", x = NULL, y = NULL)
+      })}
+    
+    
   })
   
 }
