@@ -318,7 +318,7 @@ server <- function(input, output) {
       } else if (input$Comp == "All") {
         player_combined_df[player_combined_df$Position == input$Position, ] |>
           filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
-      } else if (input$Postion == "All") {
+      } else if (input$Position == "All") {
         player_combined_df[player_combined_df$Comp == input$Comp, ] |>
           filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
       } else {
@@ -332,7 +332,7 @@ server <- function(input, output) {
       } else if (input$Comp == "All") {
         players_per90[players_per90$Position == input$Position, ] |>
           filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
-      } else if (input$Postion == "All") {
+      } else if (input$Position == "All") {
         players_per90[players_per90$Comp == input$Comp, ] |>
           filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
       } else {
