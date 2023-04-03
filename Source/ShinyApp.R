@@ -217,43 +217,55 @@ class(complete_scouting_reports$Value)
 
 complete_scouting_reports$percentile <- complete_scouting_reports$percentile * 100
 
+
 ui <- navbarPage(
   theme = bs_theme(version = 4, bootswatch = "sandstone"),
-                 "Football Application",
-                 tabPanel(
-                   "Player Scatter Plots",
-                   
-                   titlePanel("Football Players Scatter Plot"),
-                   
-                   sidebarLayout(
-                     sidebarPanel(
-                       selectInput("Position", "Select Positions:",
-                                   c("All", player_combined_df$Position),
-                                   selected = NULL),
-                       selectInput("Comp", "Select League:",
-                                   c("All", player_combined_df$Comp),
-                                   selected = NULL),
-                       selectInput("x", "Select x axis:",
-                                   c(colnames(player_combined_df)),
-                                   selected = NULL),
-                       selectInput("y", "Select y axis:",
-                                   c(colnames(player_combined_df)),
-                                   selected = NULL),
-                       radioButtons("radio", "Stat Type:", 
-                                    choices = c("Totals", "Per 90s")),
-                       sliderInput(inputId = "slider", label = "Minutes",
-                                   min = 1, max = max(player_combined_df$Min_Playing), value = c(450, max(player_combined_df$Min_Playing))),
-                       actionButton("submit", "Submit")
-                     ),
-                     
-                     mainPanel(
-                         tabPanel("playerPlot", plotlyOutput("scatterPlotPlayers")),
-                         tabPanel("dataTable", DT::dataTableOutput('dt1')),
-                     ),
-                     
-                   )
-                   
-                 ), 
+  "Football Application",
+  tabPanel(
+    "Player Scatter Plots",
+    
+    titlePanel("Football Players Scatter Plot"),
+    
+    sidebarLayout(
+      sidebarPanel(
+        selectInput(
+          "Position",
+          "Select Positions:",
+          c("All", player_combined_df$Position),
+          selected = NULL
+        ),
+        selectInput(
+          "Comp",
+          "Select League:",
+          c("All", player_combined_df$Comp),
+          selected = NULL
+        ),
+        selectInput("x", "Select x axis:",
+                    c(colnames(player_combined_df)),
+                    selected = NULL),
+        selectInput("y", "Select y axis:",
+                    c(colnames(player_combined_df)),
+                    selected = NULL),
+        radioButtons("radio", "Stat Type:",
+                     choices = c("Totals", "Per 90s")),
+        sliderInput(
+          inputId = "slider",
+          label = "Minutes",
+          min = 1,
+          max = max(player_combined_df$Min_Playing),
+          value = c(450, max(player_combined_df$Min_Playing))
+        ),
+        actionButton("submit", "Submit")
+      ),
+      
+      mainPanel(
+        tabPanel("playerPlot", plotlyOutput("scatterPlotPlayers")),
+        tabPanel("dataTable", DT::dataTableOutput('dt1')),
+      ),
+      
+    )
+    
+  ),
   tabPanel(
     "Team Scatter Plots",
     
@@ -261,252 +273,363 @@ ui <- navbarPage(
     
     sidebarLayout(
       sidebarPanel(
-        selectInput("Comp1", "Select League:",
-                    unique(team_standard_filtered$Comp),
-                    selected = NULL),
+        selectInput(
+          "Comp1",
+          "Select League:",
+          unique(team_standard_filtered$Comp),
+          selected = NULL
+        ),
         selectInput("x1", "Select x axis:",
-                    c(colnames(team_standard_filtered)),
+                    c(colnames(
+                      team_standard_filtered
+                    )),
                     selected = NULL),
         selectInput("y1", "Select y axis:",
-                    c(colnames(team_standard_filtered)),
+                    c(colnames(
+                      team_standard_filtered
+                    )),
                     selected = NULL),
         actionButton("submit2", "Submit")
       ),
       
-      mainPanel(
-          tabPanel("teamPlot", plotlyOutput("scatterPlotTeams")), 
-      )
+      mainPanel(tabPanel(
+        "teamPlot", plotlyOutput("scatterPlotTeams")
+      ),)
     )
     
-  ), 
+  ),
   
-                 tabPanel("Player Pizza Chart", 
-                          
-                          sidebarLayout(
-                            sidebarPanel(
-                              selectInput("position", "Select Position:",
-                                          c(complete_scouting_reports$Position),
-                                          selected = NULL),
-                              selectInput("player", "Select Player:",
-                                          unique(complete_scouting_reports$Name),
-                                          selected = NULL),
-                              checkboxInput(inputId = "multi_select", label = "Compare Players", value = FALSE),
-                              conditionalPanel(
-                                condition = "input.multi_select == true",
-                                selectInput("player_comparison", "Select Player to compare:",
-                                            unique(complete_scouting_reports$Name),
-                                            selected = NULL),
-                              ),
-                              actionButton("submit1", "Submit"),
-                            ),
-                            
-                            mainPanel(
-                              plotOutput("radarChart"),
-                              plotOutput("comparisonChart")
-                            )
-                          ))
+  tabPanel("Player Pizza Chart",
+           
+           sidebarLayout(
+             sidebarPanel(
+               selectInput(
+                 "player",
+                 "Select Player:",
+                 unique(complete_scouting_reports$Name),
+                 selected = NULL
+               ),
+               checkboxInput(
+                 inputId = "multi_select",
+                 label = "Compare Players",
+                 value = FALSE
+               ),
+               conditionalPanel(
+                 condition = "input.multi_select == true",
+                 selectInput(
+                   "player_comparison",
+                   "Select Player to compare:",
+                   unique(complete_scouting_reports$Name),
+                   selected = NULL
+                 ),
+               ),
+               actionButton("submit1", "Submit"),
+             ),
+             mainPanel(
+             splitLayout(plotOutput("radarChart"),
+                       plotOutput("comparisonChart"))
+           )))
 )
 
 server <- function(input, output) {
-  
-  
   selected_comp_players <- reactive({
     if (input$radio == "Totals") {
       if (input$Comp == "All" & input$Position == "All") {
         player_combined_df |>
-          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+          filter(Min_Playing >= input$slider[1] &
+                   Min_Playing <= input$slider[2])
       } else if (input$Comp == "All") {
-        player_combined_df[player_combined_df$Position == input$Position, ] |>
-          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+        player_combined_df[player_combined_df$Position == input$Position,] |>
+          filter(Min_Playing >= input$slider[1] &
+                   Min_Playing <= input$slider[2])
       } else if (input$Position == "All") {
-        player_combined_df[player_combined_df$Comp == input$Comp, ] |>
-          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+        player_combined_df[player_combined_df$Comp == input$Comp,] |>
+          filter(Min_Playing >= input$slider[1] &
+                   Min_Playing <= input$slider[2])
       } else {
-        player_combined_df[player_combined_df$Comp == input$Comp & player_combined_df$Position == input$Position, ] |>
-          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+        player_combined_df[player_combined_df$Comp == input$Comp &
+                             player_combined_df$Position == input$Position,] |>
+          filter(Min_Playing >= input$slider[1] &
+                   Min_Playing <= input$slider[2])
       }
     } else {
       if (input$Comp == "All" & input$Position == "All") {
         players_per90 |>
-          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+          filter(Min_Playing >= input$slider[1] &
+                   Min_Playing <= input$slider[2])
       } else if (input$Comp == "All") {
-        players_per90[players_per90$Position == input$Position, ] |>
-          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+        players_per90[players_per90$Position == input$Position,] |>
+          filter(Min_Playing >= input$slider[1] &
+                   Min_Playing <= input$slider[2])
       } else if (input$Position == "All") {
-        players_per90[players_per90$Comp == input$Comp, ] |>
-          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+        players_per90[players_per90$Comp == input$Comp,] |>
+          filter(Min_Playing >= input$slider[1] &
+                   Min_Playing <= input$slider[2])
       } else {
-        players_per90[players_per90$Comp == input$Comp & players_per90$Position == input$Position, ] |>
-          filter(Min_Playing >= input$slider[1] & Min_Playing <= input$slider[2])
+        players_per90[players_per90$Comp == input$Comp &
+                        players_per90$Position == input$Position,] |>
+          filter(Min_Playing >= input$slider[1] &
+                   Min_Playing <= input$slider[2])
       }
     }
   })
   
   selected_comp_teams <- reactive({
-      team_standard_filtered[team_standard_filtered$Comp == input$Comp1, ]
+    team_standard_filtered[team_standard_filtered$Comp == input$Comp1,]
   })
   
   observeEvent(input$submit, {
-  
-  output$scatterPlotPlayers <- renderPlotly({
-    
-    
-    
-    p <- ggplot(selected_comp_players(), aes_string(x = input$x, y = input$y, text = "Name")) +
-      geom_point(aes(color=Position)) +
-      ggtitle("Football Scatter Plot") +
-      xlab(input$x) +
-      ylab(input$y)
-    
-    ggplotly(p, tooltip = c("text","x", "y"))
-    
-  })
-  output$dt1 = DT::renderDataTable({
-    selected_comp_players()
-  })
+    output$scatterPlotPlayers <- renderPlotly({
+      p <-
+        ggplot(selected_comp_players(),
+               aes_string(
+                 x = input$x,
+                 y = input$y,
+                 text = "Name"
+               )) +
+        geom_point(aes(color = Position)) +
+        ggtitle("Football Scatter Plot") +
+        xlab(input$x) +
+        ylab(input$y)
+      
+      ggplotly(p, tooltip = c("text", "x", "y"))
+      
+    })
+    output$dt1 = DT::renderDataTable({
+      selected_comp_players()
+    })
   })
   
   observeEvent(input$submit2, {
-    
     output$scatterPlotTeams <- renderPlotly({
-      
-      
-      
-      p <- ggplot(selected_comp_teams(), aes_string(x = input$x1, y = input$y1, text = "Squad")) +
+      p <-
+        ggplot(selected_comp_teams(),
+               aes_string(
+                 x = input$x1,
+                 y = input$y1,
+                 text = "Squad"
+               )) +
         geom_point() +
-        geom_text(aes(label = selected_comp_teams()$Squad), hjust = 0, vjust = 0, nudge_x = 0.3, nudge_y = 0.3) +
+        geom_text(
+          aes(label = selected_comp_teams()$Squad),
+          hjust = 0,
+          vjust = 0,
+          nudge_x = 0.3,
+          nudge_y = 0.3
+        ) +
         ggtitle("Football Scatter Plot") +
         xlab(input$x1) +
         ylab(input$y1)
       
-      ggplotly(p, tooltip = c("text","x", "y"))
+      ggplotly(p, tooltip = c("text", "x", "y"))
       
     })
     
   })
   
   observeEvent(input$submit1, {
-    
     selected_player <- complete_scouting_reports |>
       filter(Name == input$player)
-  
-
+    
+    
     compare_player <- complete_scouting_reports |>
       filter(Name == input$player_comparison)
     
-    selected_player <- selected_player[c(6,7,16,8,9,10,21,18,42,28,32,31),]
+    selected_player <-
+      selected_player[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31), ]
     selected_player$index <- 1:12
     selected_player <- selected_player |>
-      mutate(type = case_when(
-        index %in% 1:4 ~ "Attacking",
-        index %in% 5:8 ~ "Possession",
-        index %in% 9:12 ~ "Misc"
-      ))
-    selected_player$type <- factor(selected_player$type, levels = c("Attacking", "Possession", "Misc"))
+      mutate(
+        type = case_when(
+          index %in% 1:4 ~ "Attacking",
+          index %in% 5:8 ~ "Possession",
+          index %in% 9:12 ~ "Misc"
+        )
+      )
+    selected_player$type <-
+      factor(selected_player$type,
+             levels = c("Attacking", "Possession", "Misc"))
     
-    compare_player <- compare_player[c(6,7,16,8,9,10,21,18,42,28,32,31),]
+    compare_player <-
+      compare_player[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31), ]
     compare_player$index <- 1:12
     compare_player <- compare_player |>
-      mutate(type = case_when(
-        index %in% 1:4 ~ "Attacking",
-        index %in% 5:8 ~ "Possession",
-        index %in% 9:12 ~ "Misc"
-      ))
-    compare_player$type <- factor(compare_player$type, levels = c("Attacking", "Possession", "Misc"))
+      mutate(
+        type = case_when(
+          index %in% 1:4 ~ "Attacking",
+          index %in% 5:8 ~ "Possession",
+          index %in% 9:12 ~ "Misc"
+        )
+      )
+    compare_player$type <-
+      factor(compare_player$type,
+             levels = c("Attacking", "Possession", "Misc"))
     
-    output$radarChart <- renderPlot(
-
-      {
-
-        
-        color1 <- "red"
-          color2 <- "blue"
-            color3 <- "orange"
-              ggplot(data = selected_player, aes(x = reorder(Statistic, index), y = percentile, label= percentile, fill = type)) +
-                # add the bar/pizza slices that are colored
-                geom_bar(data = selected_player, width = 1,
-                         stat = "identity") +
-                scale_y_continuous(limits = c(0, 100)) +
-                # wrap bar chart as around polar center
-                coord_curvedpolar() +
-                # add the background behind each bar (alpha at .5 for slight transparency so the bars standout)
-                # geom_bar(aes(y=100, fill=type), stat="identity", width=1, alpha=0.5) +
-                # add & customize line that border whole pizza
-                geom_hline(yintercept = seq(0, 100, by = 100),
-                           linewidth = 1) +
-                # # add & customize lines between each pizza slice
-                geom_vline(xintercept = seq(.5, 12, by = 1),
-                           linewidth = .5) +
-                # add percentile labels (labels are fill by bar colors) - option 1
-                #geom_label(aes(label=value, fill=type), color = "white", size=2.5, fontface="bold", family = "Comic Sans MS", show.legend = FALSE) +
-                # add percentile labels (labels are choice of fill and color) - option 2
-                geom_label(color = "gray20", fill = "oldlace", size=2.5, fontface="bold", family = "Comic Sans MS", show.legend = FALSE) +
-                # manually set the colors of bars (3 here for each group of stats (scoring, possession, defending))
-                scale_fill_manual(values=c(color1, color2, color3)) +
-                # theme manipulation to customize plot (play around with these!)
-                theme(legend.position = "top",
-                      legend.direction = "horizontal",
-                      legend.title = element_blank(),
-                      legend.text = element_text(colour = "gray20", family = "Comic Sans MS", face = "bold"),
-                      legend.key.size = unit(.5, "cm"),
-                      legend.box.spacing = unit(0, "mm"),
-                      plot.title = element_text(hjust = .5, colour = "gray20", face = "bold", size = 16, family = "Comic Sans MS"),
-                      plot.subtitle = element_text(hjust = .5, colour = "gray20", size = 8, family = "Comic Sans MS"),
-                      panel.grid = element_blank(),
-                      axis.text.y = element_blank(),
-                      axis.ticks = element_blank(),
-                      axis.title = element_blank(),
-                      axis.text.x = element_text(face = "bold", size = 10, family = "Comic Sans MS")) +
-                labs(title = selected_player$Name[1],
-                     subtitle = "Tim Beary // 2022/2023 Season // Data from Fbref via: worldfootballR", x = NULL, y = NULL)
-      })
+    output$radarChart <- renderPlot({
+      color1 <- "red"
+      color2 <- "blue"
+      color3 <- "orange"
+      ggplot(data = selected_player,
+             aes(
+               x = reorder(Statistic, index),
+               y = percentile,
+               label = percentile,
+               fill = type
+             )) +
+        # add the bar/pizza slices that are colored
+        geom_bar(data = selected_player,
+                 width = 1,
+                 stat = "identity") +
+        scale_y_continuous(limits = c(0, 100)) +
+        # wrap bar chart as around polar center
+        coord_curvedpolar() +
+        # add the background behind each bar (alpha at .5 for slight transparency so the bars standout)
+        # geom_bar(aes(y=100, fill=type), stat="identity", width=1, alpha=0.5) +
+        # add & customize line that border whole pizza
+        geom_hline(yintercept = seq(0, 100, by = 100),
+                   linewidth = 1) +
+        # # add & customize lines between each pizza slice
+        geom_vline(xintercept = seq(.5, 12, by = 1),
+                   linewidth = .5) +
+        # add percentile labels (labels are fill by bar colors) - option 1
+        #geom_label(aes(label=value, fill=type), color = "white", size=2.5, fontface="bold", family = "Comic Sans MS", show.legend = FALSE) +
+        # add percentile labels (labels are choice of fill and color) - option 2
+        geom_label(
+          color = "gray20",
+          fill = "oldlace",
+          size = 2.5,
+          fontface = "bold",
+          family = "Comic Sans MS",
+          show.legend = FALSE
+        ) +
+        # manually set the colors of bars (3 here for each group of stats (scoring, possession, defending))
+        scale_fill_manual(values = c(color1, color2, color3)) +
+        # theme manipulation to customize plot (play around with these!)
+        theme(
+          legend.position = "top",
+          legend.direction = "horizontal",
+          legend.title = element_blank(),
+          legend.text = element_text(
+            colour = "gray20",
+            family = "Comic Sans MS",
+            face = "bold"
+          ),
+          legend.key.size = unit(.5, "cm"),
+          legend.box.spacing = unit(0, "mm"),
+          plot.title = element_text(
+            hjust = .5,
+            colour = "gray20",
+            face = "bold",
+            size = 16,
+            family = "Comic Sans MS"
+          ),
+          plot.subtitle = element_text(
+            hjust = .5,
+            colour = "gray20",
+            size = 8,
+            family = "Comic Sans MS"
+          ),
+          panel.grid = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_blank(),
+          axis.text.x = element_text(
+            face = "bold",
+            size = 10,
+            family = "Comic Sans MS"
+          )
+        ) +
+        labs(
+          title = selected_player$Name[1],
+          subtitle = "Tim Beary // 2022/2023 Season // Data from Fbref via: worldfootballR",
+          x = NULL,
+          y = NULL
+        )
+    })
     
     if (input$multi_select && !is.null(input$player_comparison)) {
-    output$comparisonChart <- renderPlot(
-
-      {      
-
+      output$comparisonChart <- renderPlot({
         color1 <- "red"
-          color2 <- "blue"
-            color3 <- "orange"
-              ggplot(data = compare_player, aes(x = reorder(Statistic, index), y = percentile, label= percentile, fill = type)) +
-                # add the bar/pizza slices that are colored
-                geom_bar(data = compare_player, width = 1,
-                         stat = "identity") +
-                scale_y_continuous(limits = c(0, 100)) +
-                # wrap bar chart as around polar center
-                coord_curvedpolar() +
-                # add the background behind each bar (alpha at .5 for slight transparency so the bars standout)
-                # geom_bar(aes(y=100, fill=type), stat="identity", width=1, alpha=0.5) +
-                # add & customize line that border whole pizza
-                geom_hline(yintercept = seq(0, 100, by = 100),
-                           linewidth = 1) +
-                # # add & customize lines between each pizza slice
-                geom_vline(xintercept = seq(.5, 12, by = 1),
-                           linewidth = .5) +
-                # add percentile labels (labels are fill by bar colors) - option 1
-                #geom_label(aes(label=value, fill=type), color = "white", size=2.5, fontface="bold", family = "Comic Sans MS", show.legend = FALSE) +
-                # add percentile labels (labels are choice of fill and color) - option 2
-                geom_label(color = "gray20", fill = "oldlace", size=2.5, fontface="bold", family = "Comic Sans MS", show.legend = FALSE) +
-                # manually set the colors of bars (3 here for each group of stats (scoring, possession, defending))
-                scale_fill_manual(values=c(color1, color2, color3)) +
-                # theme manipulation to customize plot (play around with these!)
-                theme(legend.position = "top",
-                      legend.direction = "horizontal",
-                      legend.title = element_blank(),
-                      legend.text = element_text(colour = "gray20", family = "Comic Sans MS", face = "bold"),
-                      legend.key.size = unit(.5, "cm"),
-                      legend.box.spacing = unit(0, "mm"),
-                      plot.title = element_text(hjust = .5, colour = "gray20", face = "bold", size = 16, family = "Comic Sans MS"),
-                      plot.subtitle = element_text(hjust = .5, colour = "gray20", size = 8, family = "Comic Sans MS"),
-                      panel.grid = element_blank(),
-                      axis.text.y = element_blank(),
-                      axis.ticks = element_blank(),
-                      axis.title = element_blank(),
-                      axis.text.x = element_text(face = "bold", size = 10, family = "Comic Sans MS")) +
-                labs(title = compare_player$Name[1],
-                     subtitle = "Tim Beary // 2022/2023 Season // Data from Fbref via: worldfootballR", x = NULL, y = NULL)
-      })}
+        color2 <- "blue"
+        color3 <- "orange"
+        ggplot(data = compare_player,
+               aes(
+                 x = reorder(Statistic, index),
+                 y = percentile,
+                 label = percentile,
+                 fill = type
+               )) +
+          # add the bar/pizza slices that are colored
+          geom_bar(data = compare_player,
+                   width = 1,
+                   stat = "identity") +
+          scale_y_continuous(limits = c(0, 100)) +
+          # wrap bar chart as around polar center
+          coord_curvedpolar() +
+          # add the background behind each bar (alpha at .5 for slight transparency so the bars standout)
+          # geom_bar(aes(y=100, fill=type), stat="identity", width=1, alpha=0.5) +
+          # add & customize line that border whole pizza
+          geom_hline(yintercept = seq(0, 100, by = 100),
+                     linewidth = 1) +
+          # # add & customize lines between each pizza slice
+          geom_vline(xintercept = seq(.5, 12, by = 1),
+                     linewidth = .5) +
+          # add percentile labels (labels are fill by bar colors) - option 1
+          #geom_label(aes(label=value, fill=type), color = "white", size=2.5, fontface="bold", family = "Comic Sans MS", show.legend = FALSE) +
+          # add percentile labels (labels are choice of fill and color) - option 2
+          geom_label(
+            color = "gray20",
+            fill = "oldlace",
+            size = 2.5,
+            fontface = "bold",
+            family = "Comic Sans MS",
+            show.legend = FALSE
+          ) +
+          # manually set the colors of bars (3 here for each group of stats (scoring, possession, defending))
+          scale_fill_manual(values = c(color1, color2, color3)) +
+          # theme manipulation to customize plot (play around with these!)
+          theme(
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.title = element_blank(),
+            legend.text = element_text(
+              colour = "gray20",
+              family = "Comic Sans MS",
+              face = "bold"
+            ),
+            legend.key.size = unit(.5, "cm"),
+            legend.box.spacing = unit(0, "mm"),
+            plot.title = element_text(
+              hjust = .5,
+              colour = "gray20",
+              face = "bold",
+              size = 16,
+              family = "Comic Sans MS"
+            ),
+            plot.subtitle = element_text(
+              hjust = .5,
+              colour = "gray20",
+              size = 8,
+              family = "Comic Sans MS"
+            ),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks = element_blank(),
+            axis.title = element_blank(),
+            axis.text.x = element_text(
+              face = "bold",
+              size = 10,
+              family = "Comic Sans MS"
+            )
+          ) +
+          labs(
+            title = compare_player$Name[1],
+            subtitle = "Tim Beary // 2022/2023 Season // Data from Fbref via: worldfootballR",
+            x = NULL,
+            y = NULL
+          )
+      })
+    }
     
     
   })
