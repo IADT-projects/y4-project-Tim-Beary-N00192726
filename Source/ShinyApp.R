@@ -10,7 +10,6 @@ library(plotly)
 library(DT)
 library(bslib)
 
-# install.packages("bslib")
 
 team_standard <- fb_big5_advanced_season_stats(
   season_end_year = 2023, stat_type = "standard", team_or_player = "team"
@@ -255,6 +254,11 @@ ui <- navbarPage(
           max = max(player_combined_df$Min_Playing),
           value = c(450, max(player_combined_df$Min_Playing))
         ),
+        selectInput(
+          "highlight",
+          "Select a player to hightlight: (in red)",
+          choices = NULL
+        ),
         actionButton("submit", "Submit")
       ),
       
@@ -331,7 +335,7 @@ ui <- navbarPage(
            )))
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   selected_comp_players <- reactive({
     if (input$radio == "Totals") {
       if (input$Comp == "All" & input$Position == "All") {
@@ -378,6 +382,15 @@ server <- function(input, output) {
     team_standard_filtered[team_standard_filtered$Comp == input$Comp1,]
   })
   
+  highlight_player <- reactive({
+    selected_comp_players() |>
+      filter(Name == input$highlight)
+  })
+  
+  observe({
+    updateSelectInput(session, "highlight", choices = unique(selected_comp_players()$Name))
+  })
+  
   observeEvent(input$submit, {
     output$scatterPlotPlayers <- renderPlotly({
       p <-
@@ -387,7 +400,8 @@ server <- function(input, output) {
                  y = input$y,
                  text = "Name"
                )) +
-        geom_point(aes(color = Position)) +
+        geom_point() +
+        geom_point(data = highlight_player(), color = "red", size = 3) +
         ggtitle("Football Scatter Plot") +
         xlab(input$x) +
         ylab(input$y)
