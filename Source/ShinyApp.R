@@ -29,6 +29,9 @@ player_standard <- fb_big5_advanced_season_stats(
   team_or_player = "player"
 )
 
+player_standard$Age <- as.numeric(gsub("-.*", "", player_standard$Age))
+
+
 player_standard$index <- 1:nrow(player_standard)
 
 player_standard_filtered <- player_standard |>
@@ -37,6 +40,7 @@ player_standard_filtered <- player_standard |>
     Squad,
     Comp,
     Player,
+    Age,
     Url,
     Nation,
     Pos,
@@ -52,6 +56,8 @@ player_standard_filtered <- player_standard |>
     PrgP_Progression,
     PrgR_Progression
   )
+
+
 
 player_shooting <- fb_big5_advanced_season_stats(
   season_end_year = 2023,
@@ -219,8 +225,8 @@ player_combined_df$Position <-
   )
 
 players_per90 <- player_combined_df |>
-  mutate_at(vars(11:49), ~ (. / Min_Playing) * 90) |>
-  mutate_at(vars(11:49), round, 2)
+  mutate_at(vars(12:50), ~ (. / Min_Playing) * 90) |>
+  mutate_at(vars(12:50), round, 2)
 
 forwards_stats <- players_per90 |>
   filter(Position == "Forward") |>
@@ -243,6 +249,7 @@ forwards_scouting_reports <-
   filter(
     forwards_scouting_reports,
     Statistic != "index",
+    Statistic != "Age",
     Statistic != "Squad",
     Statistic != "Comp",
     Statistic != "Nation",
@@ -270,6 +277,7 @@ midfielders_scouting_reports <-
   filter(
     midfielders_scouting_reports,
     Statistic != "index",
+    Statistic != "Age",
     Statistic != "Squad",
     Statistic != "Comp",
     Statistic != "Nation",
@@ -297,6 +305,7 @@ centrebacks_scouting_reports <-
   filter(
     centrebacks_scouting_reports,
     Statistic != "index",
+    Statistic != "Age",
     Statistic != "Squad",
     Statistic != "Comp",
     Statistic != "Nation",
@@ -324,6 +333,7 @@ fullbacks_scouting_reports <-
   filter(
     fullbacks_scouting_reports,
     Statistic != "index",
+    Statistic != "Age",
     Statistic != "Squad",
     Statistic != "Comp",
     Statistic != "Nation",
@@ -352,6 +362,7 @@ wingers_attmids_scouting_reports <-
   filter(
     wingers_attmids_scouting_reports,
     Statistic != "index",
+    Statistic != "Age",
     Statistic != "Squad",
     Statistic != "Comp",
     Statistic != "Nation",
@@ -391,7 +402,7 @@ ui <- navbarPage(
         selectInput(
           "Positions",
           "Select Positions:",
-          c(complete_scouting_reports$Position),
+          c(player_combined_df$Position),
           selected = c(complete_scouting_reports$Position),
           multiple = TRUE
         ),
@@ -416,6 +427,13 @@ ui <- navbarPage(
           min = 1,
           max = max(player_combined_df$Min_Playing),
           value = c(450, max(player_combined_df$Min_Playing))
+        ),
+        sliderInput(
+          inputId = "age",
+          label = "Age",
+          min = min(player_combined_df$Age),
+          max = max(player_combined_df$Age),
+          value = c(min(player_combined_df$Age), max(player_combined_df$Age))
         ),
         selectInput("highlight",
                     "Select a player to hightlight: (in red)",
@@ -501,43 +519,78 @@ server <- function(input, output, session) {
     if (input$radio == "Totals") {
       if (is.null(input$Comp) & is.null(input$Positions)) {
         player_combined_df |>
-          filter(Min_Playing >= input$slider[1] &
-                   Min_Playing <= input$slider[2])
+          filter(
+            Min_Playing >= input$slider[1] &
+              Min_Playing <= input$slider[2] &
+              Age >= input$age[1] &
+              Age <= input$age[2]
+          )
       } else if (is.null(input$Comp)) {
-        player_combined_df[player_combined_df$Position %in% input$Positions, ] |>
-          filter(Min_Playing >= input$slider[1] &
-                   Min_Playing <= input$slider[2])
+        player_combined_df[player_combined_df$Position %in% input$Positions,] |>
+          filter(
+            Min_Playing >= input$slider[1] &
+              Min_Playing <= input$slider[2] &
+              Age >= input$age[1] &
+              Age <= input$age[2]
+          )
       } else if (is.null(input$Positions)) {
-        player_combined_df[player_combined_df$Comp %in% input$Comp, ] |>
-          filter(Min_Playing >= input$slider[1] &
-                   Min_Playing <= input$slider[2])
+        player_combined_df[player_combined_df$Comp %in% input$Comp,] |>
+          filter(
+            Min_Playing >= input$slider[1] &
+              Min_Playing <= input$slider[2] &
+              Age >= input$age[1] &
+              Age <= input$age[2]
+          )
       } else {
         player_combined_df[player_combined_df$Comp %in% input$Comp &
-                             player_combined_df$Position %in% input$Positions, ] |>
-          filter(Min_Playing >= input$slider[1] &
-                   Min_Playing <= input$slider[2])
+                             player_combined_df$Position %in% input$Positions,] |>
+          filter(
+            Min_Playing >= input$slider[1] &
+              Min_Playing <= input$slider[2] &
+              Age >= input$age[1] &
+              Age <= input$age[2]
+          )
       }
     } else {
       if (is.null(input$Comp) & is.null(input$Positions)) {
         players_per90 |>
-          filter(Min_Playing >= input$slider[1] &
-                   Min_Playing <= input$slider[2])
+          filter(
+            Min_Playing >= input$slider[1] &
+              Min_Playing <= input$slider[2] &
+              Age >= input$age[1] &
+              Age <= input$age[2]
+          )
       } else if (is.null(input$Comp)) {
-        players_per90[players_per90$Position %in% input$Positions, ] |>
-          filter(Min_Playing >= input$slider[1] &
-                   Min_Playing <= input$slider[2])
+        players_per90[players_per90$Position %in% input$Positions,] |>
+          filter(
+            Min_Playing >= input$slider[1] &
+              Min_Playing <= input$slider[2] &
+              Age >= input$age[1] &
+              Age <= input$age[2]
+          )
       } else if (is.null(input$Positions)) {
-        players_per90[players_per90$Comp %in% input$Comp, ] |>
-          filter(Min_Playing >= input$slider[1] &
-                   Min_Playing <= input$slider[2])
+        players_per90[players_per90$Comp %in% input$Comp,] |>
+          filter(
+            Min_Playing >= input$slider[1] &
+              Min_Playing <= input$slider[2] &
+              Age >= input$age[1] &
+              Age <= input$age[2]
+          )
       } else {
         players_per90[players_per90$Comp %in% input$Comp &
-                        players_per90$Position %in% input$Positions, ] |>
-          filter(Min_Playing >= input$slider[1] &
-                   Min_Playing <= input$slider[2])
+                        players_per90$Position %in% input$Positions,] |>
+          filter(
+            Min_Playing >= input$slider[1] &
+              Min_Playing <= input$slider[2] &
+              Age >= input$age[1] &
+              Age <= input$age[2]
+          )
       }
     }
   })
+  
+  
+  
   
   
   
