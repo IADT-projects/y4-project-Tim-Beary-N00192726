@@ -20,37 +20,33 @@ player_per90_historic <- read.csv("Data/players_per90_historic.csv")
 
 
 
-
 ui <- navbarPage(
   theme = bs_theme(version = 5, bootswatch = "lux"),
-  "Football Application",
+  "Football Data Scouting Application",
   tabPanel(
     "Player Scatter Plots",
-    
-    titlePanel("Football Players Scatter Plot"),
-    
     sidebarLayout(
       sidebarPanel(
         selectInput(
           "Positions",
           "Select Positions:",
-          c(player_data_2023$Position),
-          selected = c(scouting_reports_2023$Position),
+          c(scouting_reports_2023$Position),
+          selected = "",
           multiple = TRUE,
         ),
         selectInput(
           "Comp",
           "Select League:",
           c(player_data_2023$Comp),
-          selected = c(player_data_2023$Comp),
+          selected = "",
           multiple = TRUE
         ),
         selectInput("x", "Select x axis:",
                     c(colnames(player_data_2023)),
-                    selected = NULL),
+                    selected = ""),
         selectInput("y", "Select y axis:",
                     c(colnames(player_data_2023)),
-                    selected = NULL),
+                    selected = ""),
         radioButtons("radio", "Stat Type:",
                      choices = c("Totals", "Per 90s")),
         sliderInput(
@@ -69,7 +65,8 @@ ui <- navbarPage(
         ),
         selectInput("highlight",
                     "Select a player to hightlight: (in red)",
-                    choices = NULL),
+                    choices = NULL, 
+                    selected = ""),
         actionButton("submit", "Submit")
       ),
       
@@ -82,9 +79,6 @@ ui <- navbarPage(
   ),
   tabPanel(
     "Historic Player Scatter Plots",
-    
-    titlePanel("Football Historic Player Scatter Plot"),
-    
     sidebarLayout(
       sidebarPanel(
         selectInput(
@@ -98,14 +92,14 @@ ui <- navbarPage(
           "Positions2",
           "Select Positions:",
           c(scouting_reports_2023$Position),
-          selected = c(scouting_reports_2023$Position),
+          selected = "",
           multiple = TRUE,
         ),
         selectInput(
           "Comp2",
           "Select League:",
           c(player_data_historic$Comp),
-          selected = c(player_data_historic$Comp),
+          selected = "",
           multiple = TRUE
         ),
         selectInput("x2", "Select x axis:",
@@ -125,7 +119,8 @@ ui <- navbarPage(
         ),
         selectInput("highlight1",
                     "Select a player to hightlight: (in red)",
-                    choices = NULL),
+                    choices = NULL,
+                    selected = ""),
         actionButton("submit_historic", "Submit")
       ),
       mainPanel(
@@ -317,13 +312,15 @@ server <- function(input, output, session) {
   observe({
     updateSelectInput(session,
                       "highlight",
-                      choices = unique(selected_comp_players()$Name))
+                      choices = unique(selected_comp_players()$Name),
+                      selected = "")
   })
   
   observe({
     updateSelectInput(session,
                       "highlight1",
-                      choices = unique(reactive_historic_players()$Name))
+                      choices = unique(reactive_historic_players()$Name),
+                      selected = "")
   })
   
   dataTablePlayers <- reactive({
@@ -363,8 +360,8 @@ server <- function(input, output, session) {
                )) +
         geom_point() +
         geom_point(data = highlight_player(),
-                   color = "red",
-                   size = 3) +
+                   color = "#ff6d00",
+                   size = 5) +
         ggtitle("Football Scatter Plot") +
         xlab(input$x) +
         ylab(input$y)
@@ -384,18 +381,19 @@ server <- function(input, output, session) {
                aes_string(
                  x = input$x2,
                  y = input$y2,
-                 text = "Name",
-                 text1 = 'Season_End_Year'
+                 name = "Name",
+                 year = 'Season_End_Year',
+                 team = "Squad"
                )) +
         geom_point() +
         geom_point(data = highlight_historic_player(),
-                   color = "red",
-                   size = 3) +
+                   color = "#ff6d00",
+                   size = 5) +
         ggtitle("Football Scatter Plot") +
         xlab(input$x2) +
         ylab(input$y2)
       
-      ggplotly(p, tooltip = c("text", "text1", "x", "y"))
+      ggplotly(p, tooltip = c("name", "year", "team", "x", "y"))
       
     })
     output$dt2 = renderDataTable({
@@ -410,7 +408,7 @@ server <- function(input, output, session) {
                aes_string(
                  x = input$x1,
                  y = input$y1,
-                 text = "Squad"
+                 team = "Squad"
                )) +
         geom_point() +
         geom_text(
@@ -424,7 +422,7 @@ server <- function(input, output, session) {
         xlab(input$x1) +
         ylab(input$y1)
       
-      ggplotly(p, tooltip = c("text", "x", "y"))
+      ggplotly(p, tooltip = c("team", "x", "y"))
       
     })
     
@@ -470,9 +468,9 @@ server <- function(input, output, session) {
     
     if (input$multi_select && !is.null(input$player_comparison)) {
       output$radarChart <- renderPlot({
-        color1 <- "red"
-        color2 <- "blue"
-        color3 <- "orange"
+        color1 <- "#008a71"
+        color2 <- "#0362cc"
+        color3 <- "#ffa602"
         ggplot(data = selected_player,
                aes(
                  x = reorder(Statistic, index),
@@ -502,16 +500,6 @@ server <- function(input, output, session) {
           ) +
           scale_fill_manual(values = c(color1, color2, color3)) +
           theme(
-            legend.position = "top",
-            legend.direction = "horizontal",
-            legend.title = element_blank(),
-            legend.text = element_text(
-              colour = "gray20",
-              family = "Comic Sans MS",
-              face = "bold"
-            ),
-            legend.key.size = unit(.5, "cm"),
-            legend.box.spacing = unit(0, "mm"),
             plot.title = element_text(
               hjust = .5,
               colour = "gray20",
@@ -533,7 +521,8 @@ server <- function(input, output, session) {
               face = "bold",
               size = 10,
               family = "Comic Sans MS"
-            )
+            ),
+            panel.background = element_rect(fill = "white")
           ) +
           labs(
             title = selected_player$Name[1],
@@ -546,9 +535,9 @@ server <- function(input, output, session) {
     } else {
 
     output$radarChart <- renderPlot({
-      color1 <- "red"
-      color2 <- "blue"
-      color3 <- "orange"
+      color1 <- "#008a71"
+      color2 <- "#0362cc"
+      color3 <- "#ffa602"
       ggplot(data = selected_player,
              aes(
                x = reorder(Statistic, index),
@@ -575,16 +564,6 @@ server <- function(input, output, session) {
         ) +
         scale_fill_manual(values = c(color1, color2, color3)) +
         theme(
-          legend.position = "top",
-          legend.direction = "horizontal",
-          legend.title = element_blank(),
-          legend.text = element_text(
-            colour = "gray20",
-            family = "Comic Sans MS",
-            face = "bold"
-          ),
-          legend.key.size = unit(.5, "cm"),
-          legend.box.spacing = unit(0, "mm"),
           plot.title = element_text(
             hjust = .5,
             colour = "gray20",
@@ -606,7 +585,8 @@ server <- function(input, output, session) {
             face = "bold",
             size = 10,
             family = "Comic Sans MS"
-          )
+          ),
+          panel.background = element_rect(fill = "white")
         ) +
         labs(
           title = selected_player$Name[1],

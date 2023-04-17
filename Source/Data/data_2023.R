@@ -18,15 +18,6 @@ team_standard_filtered <- team_standard |>
 write.csv(team_standard_filtered, "Utils/team_data_2023.csv")
 
 
-# historic_player_data <- fb_big5_advanced_season_stats(
-#   season_end_year = 2018:2022,
-#   stat_type = "standard",
-#   team_or_player = "player"
-# )
-# 
-# write.csv(historic_player_data, "Utils/historic_player_data.csv")
-
-
 player_standard <- fb_big5_advanced_season_stats(
   season_end_year = 2023,
   stat_type = "standard",
