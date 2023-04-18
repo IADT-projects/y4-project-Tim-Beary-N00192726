@@ -19,9 +19,8 @@ player_data_historic <- read.csv("Data/player_data_historic.csv")
 player_per90_historic <- read.csv("Data/players_per90_historic.csv")
 
 
-
 ui <- navbarPage(
-  theme = bs_theme(version = 5, bootswatch = "lux"),
+  theme = bs_theme(version = 4, bootswatch = "litera"),
   "Football Data Scouting Application",
   tabPanel(
     "Player Scatter Plots",
@@ -133,10 +132,16 @@ ui <- navbarPage(
            sidebarLayout(
              sidebarPanel(
                selectInput(
+                 "pizzaPosition",
+                 "Select Position:",
+                 c("",scouting_reports_2023$Position),
+                 selected = "",
+               ),
+               selectInput(
                  "player",
                  "Select Player:",
-                 unique(scouting_reports_2023$Name),
-                 selected = NULL
+                 c("",scouting_reports_2023$Name),
+                 selected = "",
                ),
                checkboxInput(
                  inputId = "multi_select",
@@ -148,8 +153,8 @@ ui <- navbarPage(
                  selectInput(
                    "player_comparison",
                    "Select Player to compare:",
-                   unique(scouting_reports_2023$Name),
-                   selected = NULL
+                   c("",scouting_reports_2023$Name),
+                   selected = ""
                  ),
                ),
                actionButton("submit1", "Submit"),
@@ -309,6 +314,10 @@ server <- function(input, output, session) {
       filter(Name == input$highlight1)
   })
   
+
+  
+  
+  
   observe({
     updateSelectInput(session,
                       "highlight",
@@ -322,6 +331,7 @@ server <- function(input, output, session) {
                       choices = unique(reactive_historic_players()$Name),
                       selected = "")
   })
+
   
   dataTablePlayers <- reactive({
     selected_comp_players() |>
@@ -428,16 +438,38 @@ server <- function(input, output, session) {
     
   })
   
+  
+  selected_player <- scouting_reports_2023
+  
+  selected_player_position <- reactive({
+    selected_player[selected_player$Position %in% input$pizzaPosition, ]
+  })
+  
+  
+  observe({
+    updateSelectInput(session,
+                      "player",
+                      choices = selected_player_position()$Name,
+                      selected = "")
+    updateSelectInput(session,
+                      "player_comparison",
+                      choices = selected_player_position()$Name,
+                      selected = "")
+  })
+  
   observeEvent(input$submit1, {
-    selected_player <- scouting_reports_2023 |>
-      filter(Name == input$player)
+    
+    selected_player <- reactive({
+      selected_player_position() |>
+        filter(Name == input$player)
+    })
     
     
     compare_player <- scouting_reports_2023 |>
       filter(Name == input$player_comparison)
     
     selected_player <-
-      selected_player[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31),]
+      selected_player()[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31),]
     selected_player$index <- 1:12
     selected_player <- selected_player |>
       mutate(
