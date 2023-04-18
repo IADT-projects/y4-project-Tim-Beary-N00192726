@@ -26,19 +26,22 @@ ui <- navbarPage(
     "Player Scatter Plots",
     sidebarLayout(
       sidebarPanel(
-        selectInput(
+        selectizeInput(
           "Positions",
           "Select Positions:",
           c(scouting_reports_2023$Position),
           selected = "",
           multiple = TRUE,
+          options = list(plugins= list('remove_button')) 
         ),
-        selectInput(
+        selectizeInput(
           "Comp",
           "Select League:",
           c(player_data_2023$Comp),
           selected = "",
-          multiple = TRUE
+          multiple = TRUE,
+          options = list(plugins= list('remove_button')) 
+          
         ),
         selectInput("x", "Select x axis:",
                     c(colnames(player_data_2023)),
@@ -62,10 +65,11 @@ ui <- navbarPage(
           max = max(player_data_2023$Age),
           value = c(min(player_data_2023$Age), max(player_data_2023$Age))
         ),
-        selectInput("highlight",
+        selectizeInput("highlight",
                     "Select a player to hightlight: (in red)",
                     choices = NULL, 
-                    selected = ""),
+                    selected = "",
+                    options = list(plugins= list('remove_button'))),
         actionButton("submit", "Submit")
       ),
       
@@ -80,26 +84,29 @@ ui <- navbarPage(
     "Historic Player Scatter Plots",
     sidebarLayout(
       sidebarPanel(
-        selectInput(
+        selectizeInput(
           "Season",
           "Select Seasons:",
           c(player_data_historic$Season_End_Year),
           selected = c(player_data_historic$Season_End_Year),
           multiple = TRUE,
+          options = list(plugins= list('remove_button')) 
         ),
-        selectInput(
+        selectizeInput(
           "Positions2",
           "Select Positions:",
           c(scouting_reports_2023$Position),
           selected = "",
           multiple = TRUE,
+          options = list(plugins= list('remove_button')) 
         ),
-        selectInput(
+        selectizeInput(
           "Comp2",
           "Select League:",
           c(player_data_historic$Comp),
           selected = "",
-          multiple = TRUE
+          multiple = TRUE,
+          options = list(plugins= list('remove_button')) 
         ),
         selectInput("x2", "Select x axis:",
                     c(colnames(player_data_historic)),
