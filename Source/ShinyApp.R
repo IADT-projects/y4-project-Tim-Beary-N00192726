@@ -29,18 +29,18 @@ ui <- navbarPage(
         selectizeInput(
           "Positions",
           "Select Positions:",
-          c(scouting_reports_2023$Position),
-          selected = "",
+          choices = unique(scouting_reports_2023$Position),
+          selected = c(scouting_reports_2023$Position),
           multiple = TRUE,
-          options = list(plugins= list('remove_button')) 
+          options = list(plugins = list('remove_button'))
         ),
         selectizeInput(
           "Comp",
           "Select League:",
-          c(player_data_2023$Comp),
-          selected = "",
+          choices = unique(player_data_2023$Comp),
+          selected = c(player_data_2023$Comp),
           multiple = TRUE,
-          options = list(plugins= list('remove_button')) 
+          options = list(plugins = list('remove_button'))
           
         ),
         selectInput("x", "Select x axis:",
@@ -65,17 +65,20 @@ ui <- navbarPage(
           max = max(player_data_2023$Age),
           value = c(min(player_data_2023$Age), max(player_data_2023$Age))
         ),
-        selectizeInput("highlight",
-                    "Select a player to hightlight: (in red)",
-                    choices = NULL, 
-                    selected = "",
-                    options = list(plugins= list('remove_button'))),
+        selectizeInput(
+          "highlight",
+          "Search a player to hightlight: (in red)",
+          choices = NULL,
+          selected = "",
+          multiple = TRUE,
+          options = list(plugins = list('remove_button'))
+        ),
         actionButton("submit", "Submit")
       ),
       
-      mainPanel(
-        verticalLayout(plotlyOutput("scatterPlotPlayers"), DTOutput('dt1'))
-      ),
+      mainPanel(verticalLayout(
+        plotlyOutput("scatterPlotPlayers"), DTOutput('dt1')
+      )),
       
     )
     
@@ -87,32 +90,36 @@ ui <- navbarPage(
         selectizeInput(
           "Season",
           "Select Seasons:",
-          c(player_data_historic$Season_End_Year),
+          choices = unique(c(player_data_historic$Season_End_Year)),
           selected = c(player_data_historic$Season_End_Year),
           multiple = TRUE,
-          options = list(plugins= list('remove_button')) 
+          options = list(plugins = list('remove_button'))
         ),
         selectizeInput(
           "Positions2",
           "Select Positions:",
-          c(scouting_reports_2023$Position),
-          selected = "",
+          choices = unique(scouting_reports_2023$Position),
+          selected = c(player_data_historic$Position),
           multiple = TRUE,
-          options = list(plugins= list('remove_button')) 
+          options = list(plugins = list('remove_button'))
         ),
         selectizeInput(
           "Comp2",
           "Select League:",
-          c(player_data_historic$Comp),
-          selected = "",
+          choices = unique(player_data_historic$Comp),
+          selected = c(player_data_historic$Comp),
           multiple = TRUE,
-          options = list(plugins= list('remove_button')) 
+          options = list(plugins = list('remove_button'))
         ),
         selectInput("x2", "Select x axis:",
-                    c(colnames(player_data_historic)),
+                    c(colnames(
+                      player_data_historic
+                    )),
                     selected = NULL),
         selectInput("y2", "Select y axis:",
-                    c(colnames(player_data_historic)),
+                    c(colnames(
+                      player_data_historic
+                    )),
                     selected = NULL),
         radioButtons("radio2", "Stat Type:",
                      choices = c("Totals", "Per 90s")),
@@ -123,31 +130,42 @@ ui <- navbarPage(
           max = max(player_data_historic$Min_Playing),
           value = c(450, max(player_data_historic$Min_Playing))
         ),
-        selectInput("highlight1",
-                    "Select a player to hightlight: (in red)",
-                    choices = NULL,
-                    selected = ""),
+        sliderInput(
+          inputId = "historic_age_slider",
+          label = "Age",
+          min = 14,
+          max = 43,
+          value = c(14,43)
+        ),
+        selectizeInput(
+          "highlight1",
+          "Search a player to hightlight: (in red)",
+          choices = NULL,
+          selected = "",
+          multiple = TRUE,
+          options = list(plugins = list('remove_button'))
+        ),
         actionButton("submit_historic", "Submit")
       ),
-      mainPanel(
-        verticalLayout(plotlyOutput("scatterPlotHistoricPlayers"), DTOutput('dt2'))
-      ),
-      )
-    ),
+      mainPanel(verticalLayout(
+        plotlyOutput("scatterPlotHistoricPlayers"), DTOutput('dt2')
+      )),
+    )
+  ),
   
   tabPanel("Player Pizza Chart",
            sidebarLayout(
              sidebarPanel(
-               selectInput(
+               selectizeInput(
                  "pizzaPosition",
                  "Select Position:",
-                 c("",scouting_reports_2023$Position),
+                 choices = NULL,
                  selected = "",
                ),
-               selectInput(
+               selectizeInput(
                  "player",
-                 "Select Player:",
-                 c("",scouting_reports_2023$Name),
+                 "Search Player:",
+                 choices = NULL,
                  selected = "",
                ),
                checkboxInput(
@@ -157,18 +175,18 @@ ui <- navbarPage(
                ),
                conditionalPanel(
                  condition = "input.multi_select == true",
-                 selectInput(
+                 selectizeInput(
                    "player_comparison",
-                   "Select Player to compare:",
-                   c("",scouting_reports_2023$Name),
+                   "Search Player to compare:",
+                   choices = NULL,
                    selected = ""
                  ),
                ),
                actionButton("submit1", "Submit"),
              ),
-             mainPanel((
-               plotOutput("radarChart",height = "80vh")
-             ))
+             mainPanel((plotOutput(
+               "radarChart", height = "80vh"
+             )))
            ))
 )
 
@@ -184,7 +202,7 @@ server <- function(input, output, session) {
               Age <= input$age[2]
           )
       } else if (is.null(input$Comp)) {
-        player_data_2023[player_data_2023$Position %in% input$Positions,] |>
+        player_data_2023[player_data_2023$Position %in% input$Positions, ] |>
           filter(
             Min_Playing >= input$slider[1] &
               Min_Playing <= input$slider[2] &
@@ -192,7 +210,7 @@ server <- function(input, output, session) {
               Age <= input$age[2]
           )
       } else if (is.null(input$Positions)) {
-        player_data_2023[player_data_2023$Comp %in% input$Comp,] |>
+        player_data_2023[player_data_2023$Comp %in% input$Comp, ] |>
           filter(
             Min_Playing >= input$slider[1] &
               Min_Playing <= input$slider[2] &
@@ -201,7 +219,7 @@ server <- function(input, output, session) {
           )
       } else {
         player_data_2023[player_data_2023$Comp %in% input$Comp &
-                             player_data_2023$Position %in% input$Positions,] |>
+                           player_data_2023$Position %in% input$Positions, ] |>
           filter(
             Min_Playing >= input$slider[1] &
               Min_Playing <= input$slider[2] &
@@ -219,7 +237,7 @@ server <- function(input, output, session) {
               Age <= input$age[2]
           )
       } else if (is.null(input$Comp)) {
-        player_per90_2023[player_per90_2023$Position %in% input$Positions,] |>
+        player_per90_2023[player_per90_2023$Position %in% input$Positions, ] |>
           filter(
             Min_Playing >= input$slider[1] &
               Min_Playing <= input$slider[2] &
@@ -227,7 +245,7 @@ server <- function(input, output, session) {
               Age <= input$age[2]
           )
       } else if (is.null(input$Positions)) {
-        player_per90_2023[player_per90_2023$Comp %in% input$Comp,] |>
+        player_per90_2023[player_per90_2023$Comp %in% input$Comp, ] |>
           filter(
             Min_Playing >= input$slider[1] &
               Min_Playing <= input$slider[2] &
@@ -236,7 +254,7 @@ server <- function(input, output, session) {
           )
       } else {
         player_per90_2023[player_per90_2023$Comp %in% input$Comp &
-                        player_per90_2023$Position %in% input$Positions,] |>
+                            player_per90_2023$Position %in% input$Positions, ] |>
           filter(
             Min_Playing >= input$slider[1] &
               Min_Playing <= input$slider[2] &
@@ -248,59 +266,81 @@ server <- function(input, output, session) {
   })
   
   reactive_historic_players <- reactive({
-  if (input$radio2 == "Totals") {
-    if (is.null(input$Comp2) & is.null(input$Positions2) & is.null(input$Season)) {
-      player_data_historic |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
-    } else if (is.null(input$Comp2) & is.null(input$Season)) {
-      player_data_historic[player_data_historic$Position %in% input$Positions2, ] |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
-    } else if (is.null(input$Positions2) & is.null(input$Season)) {
-      player_data_historic[player_data_historic$Comp %in% input$Comp2, ] |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
-    } else if (is.null(input$Season)) {
-      player_data_historic[player_data_historic$Comp %in% input$Comp2 &
-                             player_data_historic$Position %in% input$Positions2, ] |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
+    if (input$radio2 == "Totals") {
+      if (is.null(input$Comp2) &
+          is.null(input$Positions2) & is.null(input$Season)) {
+        player_data_historic |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] &
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      } else if (is.null(input$Comp2) & is.null(input$Season)) {
+        player_data_historic[player_data_historic$Position %in% input$Positions2,] |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] &
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      } else if (is.null(input$Positions2) & is.null(input$Season)) {
+        player_data_historic[player_data_historic$Comp %in% input$Comp2,] |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] &
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      } else if (is.null(input$Season)) {
+        player_data_historic[player_data_historic$Comp %in% input$Comp2 &
+                               player_data_historic$Position %in% input$Positions2,] |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] &
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      } else {
+        player_data_historic[player_data_historic$Comp %in% input$Comp2 &
+                               player_data_historic$Position %in% input$Positions2 &
+                               player_data_historic$Season_End_Year %in%  input$Season,] |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] & 
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      }
     } else {
-      player_data_historic[player_data_historic$Comp %in% input$Comp2 &
-                             player_data_historic$Position %in% input$Positions2 &
-                             player_data_historic$Season_End_Year %in%  input$Season, ] |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
-    }
-  } else {
-    if (is.null(input$Comp2) & is.null(input$Positions2) & is.null(input$Season)) {
-      player_per90_historic |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
-    } else if (is.null(input$Comp2) & is.null(input$Season)) {
-      player_per90_historic[player_per90_historic$Position %in% input$Positions2, ] |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
-    } else if (is.null(input$Positions2) & is.null(input$Season)) {
-      player_per90_historic[player_per90_historic$Comp %in% input$Comp2, ] |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
-    } else if (is.null(input$Season)) {
-      player_per90_historic[player_per90_historic$Comp %in% input$Comp2 &
-                                player_per90_historic$Position %in% input$Positions2, ] |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
-    } else {
-      player_per90_historic[player_per90_historic$Comp %in% input$Comp2 &
+      if (is.null(input$Comp2) &
+          is.null(input$Positions2) & is.null(input$Season)) {
+        player_per90_historic |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] & 
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      } else if (is.null(input$Comp2) & is.null(input$Season)) {
+        player_per90_historic[player_per90_historic$Position %in% input$Positions2,] |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] & 
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      } else if (is.null(input$Positions2) & is.null(input$Season)) {
+        player_per90_historic[player_per90_historic$Comp %in% input$Comp2,] |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] &
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      } else if (is.null(input$Season)) {
+        player_per90_historic[player_per90_historic$Comp %in% input$Comp2 &
+                                player_per90_historic$Position %in% input$Positions2,] |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] &
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      } else {
+        player_per90_historic[player_per90_historic$Comp %in% input$Comp2 &
                                 player_per90_historic$Position %in% input$Positions2 &
-                                player_per90_historic$Season_End_Year %in%  input$Season, ] |>
-        filter(Min_Playing >= input$slider2[1] &
-                 Min_Playing <= input$slider2[2])
+                                player_per90_historic$Season_End_Year %in%  input$Season,] |>
+          filter(Min_Playing >= input$slider2[1] &
+                   Min_Playing <= input$slider2[2] &
+                   Age >= input$historic_age_slider[1] &
+                   Age <= input$historic_age_slider[2])
+      }
     }
-  }
   })
-
+  
   
   
   
@@ -308,61 +348,57 @@ server <- function(input, output, session) {
   
   
   selected_comp_teams <- reactive({
-    team_data_2023[team_data_2023$Comp == input$Comp1, ]
+    team_data_2023[team_data_2023$Comp == input$Comp1,]
   })
   
   highlight_player <- reactive({
-    selected_comp_players() |>
-      filter(Name == input$highlight)
+    selected_comp_players()[selected_comp_players()$Name %in% input$highlight,]
   })
   
   highlight_historic_player <- reactive({
-    reactive_historic_players() |>
-      filter(Name == input$highlight1)
-  })
-  
-
-  
-  
-  
-  observe({
-    updateSelectInput(session,
-                      "highlight",
-                      choices = unique(selected_comp_players()$Name),
-                      selected = "")
+      reactive_historic_players()[reactive_historic_players()$Name %in% input$highlight1,]
   })
   
   observe({
-    updateSelectInput(session,
-                      "highlight1",
-                      choices = unique(reactive_historic_players()$Name),
-                      selected = "")
+    updateSelectizeInput(
+      session,
+      "highlight",
+      choices = unique(selected_comp_players()$Name),
+      selected = "",
+      server = TRUE
+    )
   })
-
+  
+  observe({
+    updateSelectizeInput(
+      session,
+      "highlight1",
+      choices = unique(reactive_historic_players()$Name),
+      selected = "",
+      server = TRUE
+    )
+  })
+  
   
   dataTablePlayers <- reactive({
     selected_comp_players() |>
-      select(
-        Name,
-        Position,
-        Comp,
-        Squad,
-        input$x,
-        input$y
-      )
+      select(Name,
+             Position,
+             Comp,
+             Squad,
+             input$x,
+             input$y)
   })
   
   dataTableHistoricPlayers <- reactive({
     reactive_historic_players() |>
-      select(
-        Name,
-        Position,
-        Comp,
-        Season_End_Year,
-        Squad,
-        input$x2,
-        input$y2
-      )
+      select(Name,
+             Position,
+             Comp,
+             Season_End_Year,
+             Squad,
+             input$x2,
+             input$y2)
   })
   
   
@@ -379,6 +415,12 @@ server <- function(input, output, session) {
         geom_point(data = highlight_player(),
                    color = "#ff6d00",
                    size = 5) +
+        # geom_text(
+        #   data = highlight_player(),
+        #   aes(label = highlight_player()$Name),
+        #   color = "#ff6d00",
+        #   nudge_y = 0.5,
+        # )  +
         ggtitle("Football Scatter Plot") +
         xlab(input$x) +
         ylab(input$y)
@@ -394,14 +436,16 @@ server <- function(input, output, session) {
   observeEvent(input$submit_historic, {
     output$scatterPlotHistoricPlayers <- renderPlotly({
       p <-
-        ggplot(reactive_historic_players(),
-               aes_string(
-                 x = input$x2,
-                 y = input$y2,
-                 name = "Name",
-                 year = 'Season_End_Year',
-                 team = "Squad"
-               )) +
+        ggplot(
+          reactive_historic_players(),
+          aes_string(
+            x = input$x2,
+            y = input$y2,
+            name = "Name",
+            year = 'Season_End_Year',
+            team = "Squad"
+          )
+        ) +
         geom_point() +
         geom_point(data = highlight_historic_player(),
                    color = "#ff6d00",
@@ -448,24 +492,31 @@ server <- function(input, output, session) {
   
   selected_player <- scouting_reports_2023
   
+  updateSelectizeInput(session,
+                       "pizzaPosition",
+                       choices = unique(selected_player$Position),
+                       selected = "",
+                       server = TRUE)
+  
   selected_player_position <- reactive({
-    selected_player[selected_player$Position %in% input$pizzaPosition, ]
+    selected_player[selected_player$Position %in% input$pizzaPosition,]
   })
   
   
   observe({
-    updateSelectInput(session,
+    updateSelectizeInput(session,
                       "player",
                       choices = selected_player_position()$Name,
-                      selected = "")
-    updateSelectInput(session,
+                      selected = "",
+                      server = TRUE)
+    updateSelectizeInput(session,
                       "player_comparison",
                       choices = selected_player_position()$Name,
-                      selected = "")
+                      selected = "",
+                      server = TRUE)
   })
   
   observeEvent(input$submit1, {
-    
     selected_player <- reactive({
       selected_player_position() |>
         filter(Name == input$player)
@@ -476,7 +527,7 @@ server <- function(input, output, session) {
       filter(Name == input$player_comparison)
     
     selected_player <-
-      selected_player()[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31),]
+      selected_player()[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31), ]
     selected_player$index <- 1:12
     selected_player <- selected_player |>
       mutate(
@@ -491,7 +542,7 @@ server <- function(input, output, session) {
              levels = c("Attacking", "Possession", "Misc"))
     
     compare_player <-
-      compare_player[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31),]
+      compare_player[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31), ]
     compare_player$index <- 1:12
     compare_player <- compare_player |>
       mutate(
@@ -519,16 +570,22 @@ server <- function(input, output, session) {
                )) +
           geom_bar(data = selected_player,
                    stat = "identity",
-                   width = 1,
+                   width = 1,) +
+          geom_bar(
+            data = compare_player,
+            stat = "identity",
+            width = 1,
+            alpha = 0,
+            color = "black",
+            size = 2
           ) +
-          geom_bar(data = compare_player, stat = "identity", width = 1, alpha = 0, color = "black", size = 2) +
           scale_y_continuous(limits = c(0, 100)) +
           coord_curvedpolar() +
           geom_hline(yintercept = seq(0, 100, by = 100),
                      linewidth = 1) +
           geom_vline(xintercept = seq(.5, 12, by = 1),
                      linewidth = .5) +
-
+          
           geom_label(
             color = "gray20",
             fill = "oldlace",
@@ -572,68 +629,65 @@ server <- function(input, output, session) {
       })
       
     } else {
-
-    output$radarChart <- renderPlot({
-      color1 <- "#008a71"
-      color2 <- "#0362cc"
-      color3 <- "#ffa602"
-      ggplot(data = selected_player,
-             aes(
-               x = reorder(Statistic, index),
-               y = percentile,
-               label = percentile,
-               fill = type
-             )) +
-        geom_bar(data = selected_player,
-                 width = 1,
-                 stat = "identity") +
-        scale_y_continuous(limits = c(0, 100)) +
-        coord_curvedpolar() +
-        geom_hline(yintercept = seq(0, 100, by = 100),
-                   linewidth = 1) +
-        geom_vline(xintercept = seq(.5, 12, by = 1),
-                   linewidth = .5) +
-        geom_label(
-          color = "gray20",
-          fill = "oldlace",
-          size = 2.5,
-          fontface = "bold",
-          family = "Comic Sans MS",
-          show.legend = FALSE
-        ) +
-        scale_fill_manual(values = c(color1, color2, color3)) +
-        theme(
-          plot.title = element_text(
-            hjust = .5,
-            colour = "gray20",
-            face = "bold",
-            size = 16,
-            family = "Comic Sans MS"
-          ),
-          plot.subtitle = element_text(
-            hjust = .5,
-            colour = "black",
-            size = 16,
-            family = "Comic Sans MS"
-          ),
-          panel.grid = element_blank(),
-          axis.text.y = element_blank(),
-          axis.ticks = element_blank(),
-          axis.title = element_blank(),
-          axis.text.x = element_text(
-            face = "bold",
-            size = 10,
-            family = "Comic Sans MS"
-          ),
-          panel.background = element_rect(fill = "white")
-        ) +
-        labs(
-          title = selected_player$Name[1],
-          x = NULL,
-          y = NULL
-        )
-    })
+      output$radarChart <- renderPlot({
+        color1 <- "#008a71"
+        color2 <- "#0362cc"
+        color3 <- "#ffa602"
+        ggplot(data = selected_player,
+               aes(
+                 x = reorder(Statistic, index),
+                 y = percentile,
+                 label = percentile,
+                 fill = type
+               )) +
+          geom_bar(data = selected_player,
+                   width = 1,
+                   stat = "identity") +
+          scale_y_continuous(limits = c(0, 100)) +
+          coord_curvedpolar() +
+          geom_hline(yintercept = seq(0, 100, by = 100),
+                     linewidth = 1) +
+          geom_vline(xintercept = seq(.5, 12, by = 1),
+                     linewidth = .5) +
+          geom_label(
+            color = "gray20",
+            fill = "oldlace",
+            size = 2.5,
+            fontface = "bold",
+            family = "Comic Sans MS",
+            show.legend = FALSE
+          ) +
+          scale_fill_manual(values = c(color1, color2, color3)) +
+          theme(
+            plot.title = element_text(
+              hjust = .5,
+              colour = "gray20",
+              face = "bold",
+              size = 16,
+              family = "Comic Sans MS"
+            ),
+            plot.subtitle = element_text(
+              hjust = .5,
+              colour = "black",
+              size = 16,
+              family = "Comic Sans MS"
+            ),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks = element_blank(),
+            axis.title = element_blank(),
+            axis.text.x = element_text(
+              face = "bold",
+              size = 10,
+              family = "Comic Sans MS"
+            ),
+            panel.background = element_rect(fill = "white")
+          ) +
+          labs(title = selected_player$Name[1],
+               x = NULL,
+               y = NULL)
+      })
     }
-})
+  })
 }
 shinyApp(ui = ui, server = server)

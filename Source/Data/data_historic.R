@@ -15,7 +15,7 @@ team_standard <- load_fb_big5_advanced_season_stats(
 team_standard_filtered <- team_standard |>
   filter(Team_or_Opponent == "team")
 
-write.csv(team_standard_filtered, "Utils/team_data_historic.csv")
+write.csv(team_standard_filtered, "Data/team_data_historic.csv")
 
 
 # historic_player_data <- fb_big5_advanced_season_stats(
@@ -229,10 +229,10 @@ player_combined_df$Position <-
 
 player_data_historic <- player_combined_df
 
-write.csv(player_data_historic, "Utils/player_data_historic.csv")
+write.csv(player_data_historic, "Data/player_data_historic.csv")
 
 players_per90_historic <- player_combined_df |>
   mutate_at(vars(13:50), ~ (. / Min_Playing) * 90) |>
   mutate_at(vars(13:50), round, 2)
 
-write.csv(players_per90_historic, "Utils/players_per90_historic.csv")
+write.csv(players_per90_historic, "Data/players_per90_historic.csv")

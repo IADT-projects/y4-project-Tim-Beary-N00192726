@@ -15,7 +15,7 @@ team_standard <- fb_big5_advanced_season_stats(
 team_standard_filtered <- team_standard |>
   filter(Team_or_Opponent == "team")
 
-write.csv(team_standard_filtered, "Utils/team_data_2023.csv")
+write.csv(team_standard_filtered, "Data/team_data_2023.csv")
 
 
 player_standard <- fb_big5_advanced_season_stats(
@@ -221,13 +221,13 @@ player_combined_df$Position <-
 
 player_data_2023 <- player_combined_df
 
-write.csv(player_data_2023, "Utils/player_data_2023.csv")
+write.csv(player_data_2023, "Data/player_data_2023.csv")
 
 players_per90_2023 <- player_combined_df |>
   mutate_at(vars(12:50), ~ (. / Min_Playing) * 90) |>
   mutate_at(vars(12:50), round, 2)
 
-write.csv(players_per90_2023, "Utils/players_per90_2023.csv")
+write.csv(players_per90_2023, "Data/players_per90_2023.csv")
 
 
 forwards_stats <- players_per90_2023 |>
@@ -392,5 +392,5 @@ complete_scouting_reports$percentile <-
 
 scouting_reports_2023 <- complete_scouting_reports
 
-write.csv(scouting_reports_2023, "Utils/scouting_reports_2023.csv")
+write.csv(scouting_reports_2023, "Data/scouting_reports_2023.csv")
 
