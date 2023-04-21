@@ -174,21 +174,23 @@ player_combined_df <- player_combined_df |>
 
 
 player_combined_df <- player_combined_df |>
-  rename(Name = Player)
+  rename(Name = Player) |>
+  rename(UrlFBref = Url)
 transfermarkt_players <- player_dictionary_mapping()
 transfermarkt_players <- transfermarkt_players |>
-  rename(Name = PlayerFBref)
+  select(-PlayerFBref)
 
 player_positions = list(transfermarkt_players, player_combined_df)
 player_combined_df <- player_positions |>
-  reduce(right_join, by = 'Name')
+  reduce(right_join, by = 'UrlFBref')
 
 player_combined_df <- subset(player_combined_df, select = -Pos)
-player_combined_df <- subset(player_combined_df, select = -UrlFBref)
 player_combined_df <-
   subset(player_combined_df, select = -UrlTmarkt)
 player_combined_df <- player_combined_df |>
-  rename(Position = TmPos)
+  rename(Position = TmPos) |>
+  rename(Url = UrlFBref)
+
 
 
 player_combined_df$Position <-
@@ -202,7 +204,7 @@ player_combined_df$Position <-
   ifelse(
     player_combined_df$Position == "Central Midfield" |
       player_combined_df$Position == "Defensive Midfield",
-    "Midfield",
+    "Midfielder",
     player_combined_df$Position
   )
 player_combined_df$Position <-
