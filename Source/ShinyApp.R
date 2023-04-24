@@ -1,15 +1,10 @@
 library(shiny)
 library(tidyverse)
-library(ggplot2)
 library(worldfootballR)
-library(tidyr)
-library(geomtextpath)
-library(dplyr)
 library(plotly)
 library(DT)
 library(bslib)
-library(shinyBS)
-library(shinyWidgets)
+library(geomtextpath)
 
 player_data_2023 <- read.csv("Data/player_data_2023.csv")
 player_per90_2023 <- read.csv("Data/players_per90_2023.csv")
@@ -191,7 +186,9 @@ ui <- navbarPage(
 )
 
 server <- function(input, output, session) {
-  selected_comp_players <- reactive({
+  
+  
+  reactive_player_data <- reactive({
     if (input$radio == "Totals") {
       if (is.null(input$Comp) & is.null(input$Positions)) {
         player_data_2023 |>
@@ -347,12 +344,12 @@ server <- function(input, output, session) {
   
   
   
-  selected_comp_teams <- reactive({
-    team_data_2023[team_data_2023$Comp == input$Comp1,]
-  })
+  # selected_comp_teams <- reactive({
+  #   team_data_2023[team_data_2023$Comp == input$Comp1,]
+  # })
   
   highlight_player <- reactive({
-    selected_comp_players()[selected_comp_players()$Name %in% input$highlight,]
+    reactive_player_data()[reactive_player_data()$Name %in% input$highlight,]
   })
   
   highlight_historic_player <- reactive({
@@ -363,7 +360,7 @@ server <- function(input, output, session) {
     updateSelectizeInput(
       session,
       "highlight",
-      choices = unique(selected_comp_players()$Name),
+      choices = unique(reactive_player_data()$Name),
       selected = "",
       server = TRUE
     )
@@ -381,7 +378,7 @@ server <- function(input, output, session) {
   
   
   dataTablePlayers <- reactive({
-    selected_comp_players() |>
+    reactive_player_data() |>
       select(Name,
              Position,
              Comp,
@@ -405,7 +402,7 @@ server <- function(input, output, session) {
   observeEvent(input$submit, {
     output$scatterPlotPlayers <- renderPlotly({
       p <-
-        ggplot(selected_comp_players(),
+        ggplot(reactive_player_data(),
                aes_string(
                  x = input$x,
                  y = input$y,
