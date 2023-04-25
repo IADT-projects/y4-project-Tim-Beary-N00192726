@@ -5,13 +5,13 @@ library(plotly)
 library(DT)
 library(bslib)
 library(geomtextpath)
+library(rsconnect)
 
 player_data_2023 <- read.csv("Data/player_data_2023.csv")
-player_per90_2023 <- read.csv("Data/players_per90_2023.csv")
+players_per90_2023 <- read.csv("Data/players_per90_2023.csv")
 scouting_reports_2023 <- read.csv("Data/scouting_reports_2023.csv")
-team_data_2023 <- read.csv("Data/team_data_2023.csv")
 player_data_historic <- read.csv("Data/player_data_historic.csv")
-player_per90_historic <- read.csv("Data/players_per90_historic.csv")
+players_per90_historic <- read.csv("Data/players_per90_historic.csv")
 
 
 ui <- navbarPage(
@@ -50,8 +50,8 @@ ui <- navbarPage(
           inputId = "slider",
           label = "Minutes",
           min = 1,
-          max = max(player_data_2023$Min_Playing),
-          value = c(450, max(player_data_2023$Min_Playing))
+          max = max(player_data_2023$Minutes.Played),
+          value = c(450, max(player_data_2023$Minutes.Played))
         ),
         sliderInput(
           inputId = "age",
@@ -74,9 +74,7 @@ ui <- navbarPage(
       mainPanel(verticalLayout(
         plotlyOutput("scatterPlotPlayers"), DTOutput('dt1')
       )),
-      
     )
-    
   ),
   tabPanel(
     "Historic Player Scatter Plots",
@@ -122,8 +120,8 @@ ui <- navbarPage(
           inputId = "slider2",
           label = "Minutes",
           min = 1,
-          max = max(player_data_historic$Min_Playing),
-          value = c(450, max(player_data_historic$Min_Playing))
+          max = max(player_data_historic$Minutes.Played),
+          value = c(450, max(player_data_historic$Minutes.Played))
         ),
         sliderInput(
           inputId = "historic_age_slider",
@@ -193,24 +191,24 @@ server <- function(input, output, session) {
       if (is.null(input$Comp) & is.null(input$Positions)) {
         player_data_2023 |>
           filter(
-            Min_Playing >= input$slider[1] &
-              Min_Playing <= input$slider[2] &
+            Minutes.Played >= input$slider[1] &
+              Minutes.Played <= input$slider[2] &
               Age >= input$age[1] &
               Age <= input$age[2]
           )
       } else if (is.null(input$Comp)) {
         player_data_2023[player_data_2023$Position %in% input$Positions, ] |>
           filter(
-            Min_Playing >= input$slider[1] &
-              Min_Playing <= input$slider[2] &
+            Minutes.Played >= input$slider[1] &
+              Minutes.Played <= input$slider[2] &
               Age >= input$age[1] &
               Age <= input$age[2]
           )
       } else if (is.null(input$Positions)) {
         player_data_2023[player_data_2023$Comp %in% input$Comp, ] |>
           filter(
-            Min_Playing >= input$slider[1] &
-              Min_Playing <= input$slider[2] &
+            Minutes.Played >= input$slider[1] &
+              Minutes.Played <= input$slider[2] &
               Age >= input$age[1] &
               Age <= input$age[2]
           )
@@ -218,43 +216,43 @@ server <- function(input, output, session) {
         player_data_2023[player_data_2023$Comp %in% input$Comp &
                            player_data_2023$Position %in% input$Positions, ] |>
           filter(
-            Min_Playing >= input$slider[1] &
-              Min_Playing <= input$slider[2] &
+            Minutes.Played >= input$slider[1] &
+              Minutes.Played <= input$slider[2] &
               Age >= input$age[1] &
               Age <= input$age[2]
           )
       }
     } else {
       if (is.null(input$Comp) & is.null(input$Positions)) {
-        player_per90_2023 |>
+        players_per90_2023 |>
           filter(
-            Min_Playing >= input$slider[1] &
-              Min_Playing <= input$slider[2] &
+            Minutes.Played >= input$slider[1] &
+              Minutes.Played <= input$slider[2] &
               Age >= input$age[1] &
               Age <= input$age[2]
           )
       } else if (is.null(input$Comp)) {
-        player_per90_2023[player_per90_2023$Position %in% input$Positions, ] |>
+        players_per90_2023[players_per90_2023$Position %in% input$Positions, ] |>
           filter(
-            Min_Playing >= input$slider[1] &
-              Min_Playing <= input$slider[2] &
+            Minutes.Played >= input$slider[1] &
+              Minutes.Played <= input$slider[2] &
               Age >= input$age[1] &
               Age <= input$age[2]
           )
       } else if (is.null(input$Positions)) {
-        player_per90_2023[player_per90_2023$Comp %in% input$Comp, ] |>
+        players_per90_2023[players_per90_2023$Comp %in% input$Comp, ] |>
           filter(
-            Min_Playing >= input$slider[1] &
-              Min_Playing <= input$slider[2] &
+            Minutes.Played >= input$slider[1] &
+              Minutes.Played <= input$slider[2] &
               Age >= input$age[1] &
               Age <= input$age[2]
           )
       } else {
-        player_per90_2023[player_per90_2023$Comp %in% input$Comp &
-                            player_per90_2023$Position %in% input$Positions, ] |>
+        players_per90_2023[players_per90_2023$Comp %in% input$Comp &
+                            players_per90_2023$Position %in% input$Positions, ] |>
           filter(
-            Min_Playing >= input$slider[1] &
-              Min_Playing <= input$slider[2] &
+            Minutes.Played >= input$slider[1] &
+              Minutes.Played <= input$slider[2] &
               Age >= input$age[1] &
               Age <= input$age[2]
           )
@@ -267,71 +265,71 @@ server <- function(input, output, session) {
       if (is.null(input$Comp2) &
           is.null(input$Positions2) & is.null(input$Season)) {
         player_data_historic |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] &
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] &
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       } else if (is.null(input$Comp2) & is.null(input$Season)) {
         player_data_historic[player_data_historic$Position %in% input$Positions2,] |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] &
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] &
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       } else if (is.null(input$Positions2) & is.null(input$Season)) {
         player_data_historic[player_data_historic$Comp %in% input$Comp2,] |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] &
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] &
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       } else if (is.null(input$Season)) {
         player_data_historic[player_data_historic$Comp %in% input$Comp2 &
                                player_data_historic$Position %in% input$Positions2,] |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] &
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] &
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       } else {
         player_data_historic[player_data_historic$Comp %in% input$Comp2 &
                                player_data_historic$Position %in% input$Positions2 &
                                player_data_historic$Season_End_Year %in%  input$Season,] |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] & 
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] & 
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       }
     } else {
       if (is.null(input$Comp2) &
           is.null(input$Positions2) & is.null(input$Season)) {
-        player_per90_historic |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] & 
+        players_per90_historic |>
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] & 
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       } else if (is.null(input$Comp2) & is.null(input$Season)) {
-        player_per90_historic[player_per90_historic$Position %in% input$Positions2,] |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] & 
+        players_per90_historic[players_per90_historic$Position %in% input$Positions2,] |>
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] & 
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       } else if (is.null(input$Positions2) & is.null(input$Season)) {
-        player_per90_historic[player_per90_historic$Comp %in% input$Comp2,] |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] &
+        players_per90_historic[players_per90_historic$Comp %in% input$Comp2,] |>
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] &
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       } else if (is.null(input$Season)) {
-        player_per90_historic[player_per90_historic$Comp %in% input$Comp2 &
-                                player_per90_historic$Position %in% input$Positions2,] |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] &
+        players_per90_historic[players_per90_historic$Comp %in% input$Comp2 &
+                                players_per90_historic$Position %in% input$Positions2,] |>
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] &
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       } else {
-        player_per90_historic[player_per90_historic$Comp %in% input$Comp2 &
-                                player_per90_historic$Position %in% input$Positions2 &
-                                player_per90_historic$Season_End_Year %in%  input$Season,] |>
-          filter(Min_Playing >= input$slider2[1] &
-                   Min_Playing <= input$slider2[2] &
+        players_per90_historic[players_per90_historic$Comp %in% input$Comp2 &
+                                players_per90_historic$Position %in% input$Positions2 &
+                                players_per90_historic$Season_End_Year %in%  input$Season,] |>
+          filter(Minutes.Played >= input$slider2[1] &
+                   Minutes.Played <= input$slider2[2] &
                    Age >= input$historic_age_slider[1] &
                    Age <= input$historic_age_slider[2])
       }
@@ -459,32 +457,32 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(input$submit2, {
-    output$scatterPlotTeams <- renderPlotly({
-      p <-
-        ggplot(selected_comp_teams(),
-               aes_string(
-                 x = input$x1,
-                 y = input$y1,
-                 team = "Squad"
-               )) +
-        geom_point() +
-        geom_text(
-          aes(label = selected_comp_teams()$Squad),
-          hjust = 0,
-          vjust = 0,
-          nudge_x = 0.3,
-          nudge_y = 0.3
-        ) +
-        ggtitle("Football Scatter Plot") +
-        xlab(input$x1) +
-        ylab(input$y1)
-      
-      ggplotly(p, tooltip = c("team", "x", "y"))
-      
-    })
-    
-  })
+  # observeEvent(input$submit2, {
+  #   output$scatterPlotTeams <- renderPlotly({
+  #     p <-
+  #       ggplot(selected_comp_teams(),
+  #              aes_string(
+  #                x = input$x1,
+  #                y = input$y1,
+  #                team = "Squad"
+  #              )) +
+  #       geom_point() +
+  #       geom_text(
+  #         aes(label = selected_comp_teams()$Squad),
+  #         hjust = 0,
+  #         vjust = 0,
+  #         nudge_x = 0.3,
+  #         nudge_y = 0.3
+  #       ) +
+  #       ggtitle("Football Scatter Plot") +
+  #       xlab(input$x1) +
+  #       ylab(input$y1)
+  #     
+  #     ggplotly(p, tooltip = c("team", "x", "y"))
+  #     
+  #   })
+  #   
+  # })
   
   
   selected_player <- scouting_reports_2023

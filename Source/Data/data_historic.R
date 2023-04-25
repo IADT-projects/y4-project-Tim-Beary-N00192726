@@ -5,26 +5,17 @@ library(worldfootballR)
 
 
 
-
-team_standard <- load_fb_big5_advanced_season_stats(
-  season_end_year = 2018:2022,
-  stat_type = "standard",
-  team_or_player = "team"
-)
-
-team_standard_filtered <- team_standard |>
-  filter(Team_or_Opponent == "team")
-
-write.csv(team_standard_filtered, "Data/team_data_historic.csv")
-
-
-# historic_player_data <- fb_big5_advanced_season_stats(
+# 
+# team_standard <- load_fb_big5_advanced_season_stats(
 #   season_end_year = 2018:2022,
 #   stat_type = "standard",
-#   team_or_player = "player"
+#   team_or_player = "team"
 # )
 # 
-# write.csv(historic_player_data, "Utils/historic_player_data.csv")
+# team_standard_filtered <- team_standard |>
+#   filter(Team_or_Opponent == "team")
+# 
+# write.csv(team_standard_filtered, "Data/team_data_2023.csv")
 
 
 player_standard <- load_fb_big5_advanced_season_stats(
@@ -33,7 +24,8 @@ player_standard <- load_fb_big5_advanced_season_stats(
   team_or_player = "player"
 )
 
-player_standard$Age <- as.numeric(gsub("-.*", "", player_standard$Age))
+player_standard$Age <-
+  as.numeric(gsub("-.*", "", player_standard$Age))
 
 
 player_standard$index <- 1:nrow(player_standard)
@@ -56,10 +48,7 @@ player_standard_filtered <- player_standard |>
     Ast,
     G_minus_PK,
     npxG_Expected,
-    xAG_Expected,
-    PrgC_Progression,
-    PrgP_Progression,
-    PrgR_Progression
+    xAG_Expected
   )
 
 
@@ -80,7 +69,6 @@ player_shooting_filtered <- player_shooting |>
     G_per_Sh_Standard,
     G_per_SoT_Standard,
     npxG_per_Sh_Expected,
-    
   )
 
 player_passing <- load_fb_big5_advanced_season_stats(
@@ -92,7 +80,7 @@ player_passing <- load_fb_big5_advanced_season_stats(
 player_passing$index <- 1:nrow(player_passing)
 
 player_passing_filtered <- player_passing |>
-  select(index, Att_Total, Cmp_percent_Total, xA,  Final_Third, PPA, CrsPA)
+  select(index, Cmp_Total, Att_Total, Cmp_percent_Total, PrgP, PrgDist_Total, xA, KP,  Final_Third, PPA, CrsPA)
 
 player_gsca <- load_fb_big5_advanced_season_stats(
   season_end_year = 2018:2022,
@@ -138,12 +126,16 @@ player_possession_filtered <- player_possession |>
     index,
     Touches_Touches,
     `Att 3rd_Touches`,
+    `Att Pen_Touches`,
     Att_Take,
     Succ_Take,
     Succ_percent_Take,
     Carries_Carries,
+    PrgC_Carries,
+    PrgDist_Carries,
     Final_Third_Carries,
-    CPA_Carries
+    CPA_Carries,
+    PrgR_Receiving
   )
 
 player_misc <- load_fb_big5_advanced_season_stats(
@@ -155,16 +147,16 @@ player_misc <- load_fb_big5_advanced_season_stats(
 player_misc$index <- 1:nrow(player_possession)
 
 player_misc_filtered <- player_misc |>
-  select(index,  Fld, Crs, Won_percent_Aerial)
+  select(index, Fls,  Fld, Crs, Recov, Won_percent_Aerial)
 
 
 player_combined_df = list(
   player_standard_filtered,
   player_shooting_filtered,
+  player_possession_filtered,
   player_passing_filtered,
   player_gsca_filtered,
   player_defense_filtered,
-  player_possession_filtered,
   player_misc_filtered
 )
 
@@ -190,7 +182,6 @@ player_combined_df <-
 player_combined_df <- player_combined_df |>
   rename(Position = TmPos) |>
   rename(Url = UrlFBref)
-
 
 
 player_combined_df$Position <-
@@ -229,12 +220,66 @@ player_combined_df$Position <-
     player_combined_df$Position
   )
 
+
+
+player_combined_df <- player_combined_df |>
+  rename(Starts = Starts_Playing) |>
+  rename(`Matches Played` = MP_Playing) |>
+  rename(`Minutes Played` = Min_Playing) |>
+  rename(Goals = Gls) |>
+  rename(Assists = Ast) |>
+  rename(`Goals minus Penalties` = G_minus_PK) |>
+  rename(`Non-Penalty xG` = npxG_Expected) |>
+  rename(xAG = xAG_Expected) |>
+  rename(`Total Shots` = Sh_Standard) |>
+  rename(`Shots on Target` = SoT_Standard) |>
+  rename(`Goals per Shot` = G_per_Sh_Standard) |>
+  rename(`Goals per Shot on Target` = G_per_SoT_Standard) |>
+  rename(`Non-Penalty xG per Shot` = npxG_per_Sh_Expected) |>
+  rename(`Passes Completed` = Cmp_Total) |>
+  rename(`Passes Attempted` = Att_Total) |>
+  rename(`Pass Completion %` = Cmp_percent_Total) |>
+  rename(`Progressive Passes` = PrgP) |>
+  rename(`Progressive Passing Distance` = PrgDist_Total) |>
+  rename(xA = xA) |>
+  rename(`Key Passes` = KP) |>
+  rename(`Passes into Final Third` = Final_Third) |>
+  rename(`Passes into Penalty Area` = PPA) |>
+  rename(`Crosses into Penalty Area` = CrsPA) |>
+  rename(`Shot Creating Actions` = SCA_SCA) |>
+  rename(`Goal Creating Actions` = GCA_GCA) |>
+  rename(`Tackles Won` = TklW_Tackles) |>
+  rename(`Blocks` = Blocks_Blocks) |>
+  rename(`Interceptions` = Int) |>
+  rename(`Tackles + Int` = `Tkl+Int`) |>
+  rename(`Clearances` = Clr) |>
+  rename(`Dribblers Tackled` = Tkl_Challenges) |>
+  rename(`Dribblers Tackled %` = Tkl_percent_Challenges) |>
+  rename(`Touches` = Touches_Touches) |>
+  rename(`Attacking 3rd Touches` = `Att 3rd_Touches`) |>
+  rename(`Touches in Penalty Area` = `Att Pen_Touches`) |>
+  rename(`Dribbles Attempted` = Att_Take) |>
+  rename(`Successful Dribbles` = Succ_Take) |>
+  rename(`Successful Dribbles %` = Succ_percent_Take) |>
+  rename(`Carries` = Carries_Carries) |>
+  rename(`Progressive Carries` = PrgC_Carries) |>
+  rename(`Progressive Carrying Distance` = PrgDist_Carries) |>
+  rename(`Carries into Final Third` = Final_Third_Carries) |>
+  rename(`Carries into Penalty Area` = CPA_Carries) |>
+  rename(`Progressive Passes Recieved` = PrgR_Receiving) |>
+  rename(`Fouls Commited` = Fls) |>
+  rename(`Fouls Drawn` = Fld) |>
+  rename(`Crosses` = Crs) |>
+  rename(`Ball Recoveries` = Recov) |>
+  rename(`Aerials Won %` = Won_percent_Aerial)
+
+
 player_data_historic <- player_combined_df
 
 write.csv(player_data_historic, "Data/player_data_historic.csv")
 
 players_per90_historic <- player_combined_df |>
-  mutate_at(vars(13:50), ~ (. / Min_Playing) * 90) |>
-  mutate_at(vars(13:50), round, 2)
+  mutate_at(vars(13:58, -`Successful Dribbles %`, -`Pass Completion %`, -`Dribblers Tackled %`, -`Aerials Won %`), ~ (. / `Minutes Played`) * 90) |>
+  mutate_at(vars(13:58, -`Successful Dribbles %`, -`Pass Completion %`, -`Dribblers Tackled %`, -`Aerials Won %`), round, 2)
 
 write.csv(players_per90_historic, "Data/players_per90_historic.csv")
