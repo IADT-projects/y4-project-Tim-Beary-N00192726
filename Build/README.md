@@ -1,4 +1,4 @@
 # Project_y4 DL836
-## Build
-Save your compiled version  here.
-Include instructions how to install and run the project.
+## Source
+Save your source here.
+Include instructions how to compile and configure the project.

@@ -517,39 +517,40 @@ server <- function(input, output, session) {
         filter(Name == input$player)
     })
     
-    
-    compare_player <- scouting_reports_2023 |>
-      filter(Name == input$player_comparison)
-    
     selected_player <-
-      selected_player()[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31), ]
+      selected_player()[c(4, 5, 7, 13, 21, 18, 29, 32, 41, 43, 48, 49), ]
     selected_player$index <- 1:12
     selected_player <- selected_player |>
       mutate(
         type = case_when(
           index %in% 1:4 ~ "Attacking",
           index %in% 5:8 ~ "Possession",
-          index %in% 9:12 ~ "Misc"
+          index %in% 9:12 ~ "Defending"
         )
       )
     selected_player$type <-
       factor(selected_player$type,
-             levels = c("Attacking", "Possession", "Misc"))
+             levels = c("Attacking", "Possession", "Defending"))
+    
+    
+    
+    compare_player <- scouting_reports_2023 |>
+      filter(Name == input$player_comparison)
     
     compare_player <-
-      compare_player[c(6, 7, 16, 8, 9, 10, 21, 18, 42, 28, 32, 31), ]
+      compare_player[c(4, 5, 7, 13, 21, 18, 29, 32, 41, 43, 48, 49), ]
     compare_player$index <- 1:12
     compare_player <- compare_player |>
       mutate(
         type = case_when(
           index %in% 1:4 ~ "Attacking",
           index %in% 5:8 ~ "Possession",
-          index %in% 9:12 ~ "Misc"
+          index %in% 9:12 ~ "Defending"
         )
       )
     compare_player$type <-
       factor(compare_player$type,
-             levels = c("Attacking", "Possession", "Misc"))
+             levels = c("Attacking", "Possession", "Defending"))
     
     if (input$multi_select && !is.null(input$player_comparison)) {
       output$radarChart <- renderPlot({
@@ -586,7 +587,6 @@ server <- function(input, output, session) {
             fill = "oldlace",
             size = 2.5,
             fontface = "bold",
-            family = "Comic Sans MS",
             show.legend = FALSE
           ) +
           scale_fill_manual(values = c(color1, color2, color3)) +
@@ -594,24 +594,21 @@ server <- function(input, output, session) {
             plot.title = element_text(
               hjust = .5,
               colour = "gray20",
-              size = 16,
-              family = "Comic Sans MS"
+              size = 16
             ),
             plot.subtitle = element_text(
               hjust = .5,
               colour = "black",
               face = "bold",
-              size = 16,
-              family = "Comic Sans MS"
+              size = 16
             ),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks = element_blank(),
             axis.title = element_blank(),
             axis.text.x = element_text(
-              face = "bold",
-              size = 10,
-              family = "Comic Sans MS"
+              face = "plain",
+              size = 12
             ),
             panel.background = element_rect(fill = "white")
           ) +
@@ -649,7 +646,6 @@ server <- function(input, output, session) {
             fill = "oldlace",
             size = 2.5,
             fontface = "bold",
-            family = "Comic Sans MS",
             show.legend = FALSE
           ) +
           scale_fill_manual(values = c(color1, color2, color3)) +
@@ -658,23 +654,20 @@ server <- function(input, output, session) {
               hjust = .5,
               colour = "gray20",
               face = "bold",
-              size = 16,
-              family = "Comic Sans MS"
+              size = 16
             ),
             plot.subtitle = element_text(
               hjust = .5,
               colour = "black",
-              size = 16,
-              family = "Comic Sans MS"
+              size = 16
             ),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks = element_blank(),
             axis.title = element_blank(),
             axis.text.x = element_text(
-              face = "bold",
-              size = 10,
-              family = "Comic Sans MS"
+              face = "plain",
+              size = 12,
             ),
             panel.background = element_rect(fill = "white")
           ) +
