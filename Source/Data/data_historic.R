@@ -5,18 +5,6 @@ library(worldfootballR)
 
 
 
-# 
-# team_standard <- load_fb_big5_advanced_season_stats(
-#   season_end_year = 2018:2022,
-#   stat_type = "standard",
-#   team_or_player = "team"
-# )
-# 
-# team_standard_filtered <- team_standard |>
-#   filter(Team_or_Opponent == "team")
-# 
-# write.csv(team_standard_filtered, "Data/team_data_2023.csv")
-
 
 player_standard <- load_fb_big5_advanced_season_stats(
   season_end_year = 2018:2022,

@@ -39,10 +39,10 @@ ui <- navbarPage(
           
         ),
         selectInput("x", "Select x axis:",
-                    c(colnames(player_data_2023)),
+                    c(colnames(player_data_2023[12:58])),
                     selected = ""),
         selectInput("y", "Select y axis:",
-                    c(colnames(player_data_2023)),
+                    c(colnames(player_data_2023[12:58])),
                     selected = ""),
         radioButtons("radio", "Stat Type:",
                      choices = c("Totals", "Per 90s")),
@@ -337,15 +337,6 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
-  
-  
-  
-  # selected_comp_teams <- reactive({
-  #   team_data_2023[team_data_2023$Comp == input$Comp1,]
-  # })
-  
   highlight_player <- reactive({
     reactive_player_data()[reactive_player_data()$Name %in% input$highlight,]
   })
@@ -381,6 +372,7 @@ server <- function(input, output, session) {
              Position,
              Comp,
              Squad,
+             Minutes.Played,
              input$x,
              input$y)
   })
@@ -392,6 +384,7 @@ server <- function(input, output, session) {
              Comp,
              Season_End_Year,
              Squad,
+             Minutes.Played,
              input$x2,
              input$y2)
   })
@@ -407,6 +400,8 @@ server <- function(input, output, session) {
                  text = "Name"
                )) +
         geom_point() +
+        geom_vline(xintercept = mean(reactive_player_data()[,input$x], na.rm = TRUE), linetype = "dashed") +
+        geom_hline(yintercept = mean(reactive_player_data()[,input$y], na.rm = TRUE), linetype = "dashed") +
         geom_point(data = highlight_player(),
                    color = "#ff6d00",
                    size = 5) +
@@ -442,6 +437,8 @@ server <- function(input, output, session) {
           )
         ) +
         geom_point() +
+        geom_vline(xintercept = mean(reactive_historic_players()[,input$x2], na.rm = TRUE), linetype = "dashed") +
+        geom_hline(yintercept = mean(reactive_historic_players()[,input$y2], na.rm = TRUE), linetype = "dashed") +
         geom_point(data = highlight_historic_player(),
                    color = "#ff6d00",
                    size = 5) +
@@ -457,32 +454,6 @@ server <- function(input, output, session) {
     })
   })
   
-  # observeEvent(input$submit2, {
-  #   output$scatterPlotTeams <- renderPlotly({
-  #     p <-
-  #       ggplot(selected_comp_teams(),
-  #              aes_string(
-  #                x = input$x1,
-  #                y = input$y1,
-  #                team = "Squad"
-  #              )) +
-  #       geom_point() +
-  #       geom_text(
-  #         aes(label = selected_comp_teams()$Squad),
-  #         hjust = 0,
-  #         vjust = 0,
-  #         nudge_x = 0.3,
-  #         nudge_y = 0.3
-  #       ) +
-  #       ggtitle("Football Scatter Plot") +
-  #       xlab(input$x1) +
-  #       ylab(input$y1)
-  #     
-  #     ggplotly(p, tooltip = c("team", "x", "y"))
-  #     
-  #   })
-  #   
-  # })
   
   
   selected_player <- scouting_reports_2023
