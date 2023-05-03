@@ -486,7 +486,19 @@ server <- function(input, output, session) {
                       server = TRUE)
   })
   
+
+  
   observeEvent(input$submit1, {
+    
+    
+    validate(
+      need(input$pizzaPosition, "Please select a Position"),
+      need(input$player, "Please select a Player"),
+      if (input$multi_select) {
+        need(input$player_comparison, "Please select a Player")
+      }
+    )
+
     selected_player <- reactive({
       selected_player_position() |>
         filter(Name == input$player)
@@ -783,4 +795,5 @@ server <- function(input, output, session) {
     }
   })
 }
+
 shinyApp(ui = ui, server = server)
