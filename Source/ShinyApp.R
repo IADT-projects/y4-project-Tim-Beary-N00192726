@@ -6,6 +6,7 @@ library(DT)
 library(bslib)
 library(geomtextpath)
 library(rsconnect)
+library(stringr)
 
 player_data_2023 <- read.csv("Data/player_data_2023.csv")
 players_per90_2023 <- read.csv("Data/players_per90_2023.csv")
@@ -105,14 +106,12 @@ ui <- navbarPage(
           options = list(plugins = list('remove_button'))
         ),
         selectInput("x2", "Select x axis:",
-                    c(colnames(
-                      player_data_historic
-                    )),
+                    c(colnames(player_data_historic[13:58])),
+                    
                     selected = NULL),
         selectInput("y2", "Select y axis:",
-                    c(colnames(
-                      player_data_historic
-                    )),
+                    c(colnames(player_data_historic[13:58])),
+                    
                     selected = NULL),
         radioButtons("radio2", "Stat Type:",
                      choices = c("Totals", "Per 90s")),
@@ -409,7 +408,7 @@ server <- function(input, output, session) {
         #   data = highlight_player(),
         #   aes(label = highlight_player()$Name),
         #   color = "#ff6d00",
-        #   nudge_y = 0.5,
+        #   nudge_y = 0.90,
         # )  +
         ggtitle("Football Scatter Plot") +
         xlab(input$x) +
@@ -418,9 +417,14 @@ server <- function(input, output, session) {
       ggplotly(p, tooltip = c("text", "x", "y"))
       
     })
-    output$dt1 = renderDataTable({
-      dataTablePlayers()
-    })
+    output$dt1 = renderDataTable(
+      dataTablePlayers(),
+      # extensions = "Buttons",
+      # options = list(
+      #   buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+      #   dom = 'Bfrtip'
+      # )
+    )
   })
   
   observeEvent(input$submit_historic, {
@@ -488,46 +492,173 @@ server <- function(input, output, session) {
         filter(Name == input$player)
     })
     
-    selected_player <-
-      selected_player()[c(4, 5, 7, 13, 21, 18, 29, 32, 41, 43, 48, 49), ]
-    selected_player$index <- 1:12
-    selected_player <- selected_player |>
-      mutate(
-        type = case_when(
-          index %in% 1:4 ~ "Attacking",
-          index %in% 5:8 ~ "Possession",
-          index %in% 9:12 ~ "Defending"
-        )
-      )
-    selected_player$type <-
-      factor(selected_player$type,
-             levels = c("Attacking", "Possession", "Defending"))
+      if (selected_player()$Position[1] == "Forward") {
+        selected_player <- selected_player()[c(4, 5, 7, 10, 15, 16, 21, 24, 29, 32, 34, 36, 41, 46, 49), ]
+        selected_player$index <- 1:15
+        selected_player <- selected_player |>
+          mutate(
+            type = case_when(
+              index %in% 1:4 ~ "Attacking",
+              index %in% 5:8 ~ "Possession",
+              index %in% 9:12 ~ "Passing",
+              index %in% 13:15 ~ "Misc"
+            )
+          )
+        selected_player$type <-
+          factor(selected_player$type,
+                 levels = c("Attacking", "Possession", "Passing", "Misc"))
+      } else if (selected_player()$Position[1] == "Midfielder") {
+        selected_player <- selected_player()[c(7, 8, 15, 18, 20, 21, 23, 29, 32, 33, 26, 38, 40, 48, 44), ]
+        selected_player$index <- 1:15
+        selected_player <- selected_player |>
+          mutate(
+            type = case_when(
+              index %in% 1:3 ~ "Attacking",
+              index %in% 4:7 ~ "Possession",
+              index %in% 8:11 ~ "Passing",
+              index %in% 12:15 ~ "Defending"
+            )
+          )
+        selected_player$type <-
+          factor(selected_player$type,
+                 levels = c("Attacking", "Possession", "Passing", "Defending"))
+      } else if (selected_player()$Position[1] == "Full-Back") {
+        selected_player <- selected_player()[c(7, 8, 15, 18, 21, 23, 24, 26, 29, 33, 35, 38, 40, 44, 48), ]
+        selected_player$index <- 1:15
+        selected_player <- selected_player |>
+          mutate(
+            type = case_when(
+              index %in% 1:3 ~ "Attacking",
+              index %in% 4:7 ~ "Possession",
+              index %in% 8:11 ~ "Passing",
+              index %in% 12:15 ~ "Defending"
+            )
+          )
+        selected_player$type <-
+          factor(selected_player$type,
+                 levels = c("Attacking", "Possession", "Passing", "Defending"))
+      } else if (selected_player()$Position[1] == "Centre-Back") {
+        selected_player <- selected_player()[c(7, 9, 49, 18, 21, 22, 19, 26, 28, 29, 30, 38, 40, 44, 39), ]
+        selected_player$index <- 1:15
+        selected_player <- selected_player |>
+          mutate(
+            type = case_when(
+              index %in% 1:3 ~ "Attacking",
+              index %in% 4:7 ~ "Possession",
+              index %in% 8:11 ~ "Passing",
+              index %in% 12:15 ~ "Defending"
+            )
+          )
+        selected_player$type <-
+          factor(selected_player$type,
+                 levels = c("Attacking", "Possession", "Passing", "Defending"))
+      } else {
+        selected_player <- selected_player()[c(4, 5, 7, 8, 15, 16, 18, 24, 26, 31, 32, 36, 41, 46, 49), ]
+        selected_player$index <- 1:15
+        selected_player <- selected_player |>
+          mutate(
+            type = case_when(
+              index %in% 1:4 ~ "Attacking",
+              index %in% 5:8 ~ "Possession",
+              index %in% 9:12 ~ "Passing",
+              index %in% 13:15 ~ "Misc"
+            )
+          )
+        selected_player$type <-
+          factor(selected_player$type,
+                 levels = c("Attacking", "Possession", "Passing", "Misc"))
+      }
     
-    
-    
+    if (input$multi_select) {
     compare_player <- scouting_reports_2023 |>
       filter(Name == input$player_comparison)
     
-    compare_player <-
-      compare_player[c(4, 5, 7, 13, 21, 18, 29, 32, 41, 43, 48, 49), ]
-    compare_player$index <- 1:12
-    compare_player <- compare_player |>
-      mutate(
-        type = case_when(
-          index %in% 1:4 ~ "Attacking",
-          index %in% 5:8 ~ "Possession",
-          index %in% 9:12 ~ "Defending"
+    if (compare_player$Position[1] == "Forward") {
+      compare_player <- compare_player[c(4, 5, 7, 10, 15, 16, 21, 24, 29, 32, 34, 36, 41, 46, 49), ]
+      compare_player$index <- 1:15
+      compare_player <- compare_player |>
+        mutate(
+          type = case_when(
+            index %in% 1:4 ~ "Attacking",
+            index %in% 5:8 ~ "Possession",
+            index %in% 9:12 ~ "Passing",
+            index %in% 13:15 ~ "Misc"
+          )
         )
-      )
-    compare_player$type <-
-      factor(compare_player$type,
-             levels = c("Attacking", "Possession", "Defending"))
+      compare_player$type <-
+        factor(compare_player$type,
+               levels = c("Attacking", "Possession", "Passing", "Misc"))
+    } else if (compare_player$Position[1] == "Midfielder") {
+      compare_player <- compare_player[c(7, 8, 15, 18, 20, 21, 23, 29, 32, 33, 26, 38, 40, 48, 44), ]
+      compare_player$index <- 1:15
+      compare_player <- compare_player |>
+        mutate(
+          type = case_when(
+            index %in% 1:3 ~ "Attacking",
+            index %in% 4:7 ~ "Possession",
+            index %in% 8:11 ~ "Passing",
+            index %in% 12:15 ~ "Defending"
+          )
+        )
+      compare_player$type <-
+        factor(compare_player$type,
+               levels = c("Attacking", "Possession", "Passing", "Defending"))
+    } else if (compare_player$Position[1] == "Full-Back") {
+      compare_player <- compare_player[c(7, 8, 15, 18, 21, 23, 24, 26, 29, 33, 35, 38, 40, 44, 48), ]
+      compare_player$index <- 1:15
+      compare_player <- compare_player |>
+        mutate(
+          type = case_when(
+            index %in% 1:3 ~ "Attacking",
+            index %in% 4:7 ~ "Possession",
+            index %in% 8:11 ~ "Passing",
+            index %in% 12:15 ~ "Defending"
+          )
+        )
+      compare_player$type <-
+        factor(compare_player$type,
+               levels = c("Attacking", "Possession", "Passing", "Defending"))
+    } else if (compare_player$Position[1] == "Centre-Back") {
+      compare_player <- compare_player[c(7, 9, 49, 18, 21, 22, 19, 26, 28, 29, 30, 38, 40, 44, 39), ]
+      compare_player$index <- 1:15
+      compare_player <- compare_player |>
+        mutate(
+          type = case_when(
+            index %in% 1:3 ~ "Attacking",
+            index %in% 4:7 ~ "Possession",
+            index %in% 8:11 ~ "Passing",
+            index %in% 12:15 ~ "Defending"
+          )
+        )
+      compare_player$type <-
+        factor(compare_player$type,
+               levels = c("Attacking", "Possession", "Passing", "Defending"))
+    } else {
+      compare_player <- compare_player[c(4, 5, 7, 8, 15, 16, 18, 24, 26, 31, 32, 36, 41, 46, 49), ]
+      compare_player$index <- 1:15
+      compare_player <- compare_player |>
+        mutate(
+          type = case_when(
+            index %in% 1:4 ~ "Attacking",
+            index %in% 5:8 ~ "Possession",
+            index %in% 9:12 ~ "Passing",
+            index %in% 13:15 ~ "Misc"
+          )
+        )
+      compare_player$type <-
+        factor(compare_player$type,
+               levels = c("Attacking", "Possession", "Passing", "Misc"))
+    }
+    } else {
+      NULL
+    }
     
     if (input$multi_select && !is.null(input$player_comparison)) {
       output$radarChart <- renderPlot({
         color1 <- "#008a71"
         color2 <- "#0362cc"
         color3 <- "#ffa602"
+        color4 <- "#ff6d00"
         ggplot(data = selected_player,
                aes(
                  x = reorder(Statistic, index),
@@ -547,10 +678,11 @@ server <- function(input, output, session) {
             size = 2
           ) +
           scale_y_continuous(limits = c(0, 100)) +
+          scale_x_discrete(labels = function(x) str_wrap(x, width = 18)) +
           coord_curvedpolar() +
           geom_hline(yintercept = seq(0, 100, by = 100),
                      linewidth = 1) +
-          geom_vline(xintercept = seq(.5, 12, by = 1),
+          geom_vline(xintercept = seq(.5, 15, by = 1),
                      linewidth = .5) +
           
           geom_label(
@@ -560,7 +692,7 @@ server <- function(input, output, session) {
             fontface = "bold",
             show.legend = FALSE
           ) +
-          scale_fill_manual(values = c(color1, color2, color3)) +
+          scale_fill_manual(values = c(color1, color2, color3, color4)) +
           theme(
             plot.title = element_text(
               hjust = .5,
@@ -596,6 +728,7 @@ server <- function(input, output, session) {
         color1 <- "#008a71"
         color2 <- "#0362cc"
         color3 <- "#ffa602"
+        color4 <- "#ff6d00"
         ggplot(data = selected_player,
                aes(
                  x = reorder(Statistic, index),
@@ -607,10 +740,11 @@ server <- function(input, output, session) {
                    width = 1,
                    stat = "identity") +
           scale_y_continuous(limits = c(0, 100)) +
+          scale_x_discrete(labels = function(x) str_wrap(x, width = 18)) +
           coord_curvedpolar() +
           geom_hline(yintercept = seq(0, 100, by = 100),
                      linewidth = 1) +
-          geom_vline(xintercept = seq(.5, 12, by = 1),
+          geom_vline(xintercept = seq(.5, 15, by = 1),
                      linewidth = .5) +
           geom_label(
             color = "gray20",
@@ -619,7 +753,7 @@ server <- function(input, output, session) {
             fontface = "bold",
             show.legend = FALSE
           ) +
-          scale_fill_manual(values = c(color1, color2, color3)) +
+          scale_fill_manual(values = c(color1, color2, color3, color4)) +
           theme(
             plot.title = element_text(
               hjust = .5,
