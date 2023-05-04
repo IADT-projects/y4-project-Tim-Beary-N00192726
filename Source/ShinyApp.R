@@ -73,7 +73,14 @@ ui <- navbarPage(
       ),
       
       mainPanel(verticalLayout(
-        plotlyOutput("scatterPlotPlayers"), DTOutput('dt1')
+        plotlyOutput("scatterPlotPlayers"),
+        br(),
+        conditionalPanel(
+          condition = "output.scatterPlotPlayers",
+          downloadButton("saveData", "Download Data")
+        ),
+        br(),
+        DTOutput('dt1')
       )),
     )
   ),
@@ -140,7 +147,14 @@ ui <- navbarPage(
         actionButton("submit_historic", "Submit")
       ),
       mainPanel(verticalLayout(
-        plotlyOutput("scatterPlotHistoricPlayers"), DTOutput('dt2')
+        plotlyOutput("scatterPlotHistoricPlayers"),
+        br(),
+        conditionalPanel(
+          condition = "output.scatterPlotHistoricPlayers",
+          downloadButton("saveHistoricalData", "Download Data")
+        ),
+        br(),
+        DTOutput('dt2')
       )),
     )
   ),
@@ -184,9 +198,15 @@ ui <- navbarPage(
                ),
                actionButton("submit1", "Submit"),
              ),
-             mainPanel((plotOutput(
+             mainPanel(
+               (plotOutput(
                "radarChart", height = "80vh"
-             )))
+             )),
+             conditionalPanel(
+               condition = "output.radarChart",
+               downloadButton("save", "Download Plot")
+             )
+             )
            ))
 )
 
@@ -425,6 +445,16 @@ server <- function(input, output, session) {
       ggplotly(p, tooltip = c("text", "x", "y"))
       
     })
+    
+    output$saveData <- downloadHandler(
+      filename = function(){
+        paste('Player Data','.csv',sep='')
+      },
+      content = function(file){
+        write.csv(dataTablePlayers(), file)
+      }
+    )
+    
     output$dt1 = renderDataTable(
       dataTablePlayers(),
       # extensions = "Buttons",
@@ -461,6 +491,14 @@ server <- function(input, output, session) {
       ggplotly(p, tooltip = c("name", "year", "team", "x", "y"))
       
     })
+    output$saveData <- downloadHandler(
+      filename = function(){
+        paste('Player Data','.csv',sep='')
+      },
+      content = function(file){
+        write.csv(dataTableHistoricPlayers(), file)
+      }
+    )
     output$dt2 = renderDataTable({
       dataTableHistoricPlayers()
     })
@@ -682,6 +720,9 @@ server <- function(input, output, session) {
         color2 <- "#0362cc"
         color3 <- "#ffa602"
         color4 <- "#ff6d00"
+        
+        comparisonChart <-
+          
         ggplot(data = selected_player,
                aes(
                  x = reorder(Statistic, index),
@@ -703,11 +744,11 @@ server <- function(input, output, session) {
           ) +
           scale_y_continuous(limits = c(0, 100)) +
           scale_x_discrete(labels = function(x) str_wrap(x, width = 18)) +
-          coord_curvedpolar() +
+          coord_polar() +
           geom_hline(yintercept = seq(0, 100, by = 100),
-                     linewidth = 1) +
-          geom_vline(xintercept = seq(.5, 15, by = 1),
                      linewidth = .5) +
+          geom_vline(xintercept = seq(.5, 15, by = 1),
+                     linewidth = .2) +
           
           geom_label(
             color = "gray20",
@@ -746,6 +787,17 @@ server <- function(input, output, session) {
             x = NULL,
             y = NULL
           )
+        
+        print(comparisonChart)
+        
+        output$save <- downloadHandler(
+          filename = function(){
+            paste(selected_player$Name[1], " vs ", compare_player$Name[1], '.jpeg',sep='')
+            },
+          content = function(file){
+            ggsave(file,plot=comparisonChart, scale = 1.7)
+          }
+        )
       })
       
     } else {
@@ -754,6 +806,9 @@ server <- function(input, output, session) {
         color2 <- "#0362cc"
         color3 <- "#ffa602"
         color4 <- "#ff6d00"
+        
+        pizzaChart <-
+          
         ggplot(data = selected_player,
                aes(
                  x = reorder(Statistic, index),
@@ -806,7 +861,20 @@ server <- function(input, output, session) {
                caption = "Data from FBref via worldfootballR | https://fbref.com/en/",
                x = NULL,
                y = NULL)
+        
+        print(pizzaChart)
+      
+        output$save <- downloadHandler(
+          filename = function(){
+            paste(selected_player$Name[1],'.jpeg',sep='')
+            },
+          content = function(file){
+            ggsave(file,plot=pizzaChart, scale = 1.7)
+          }
+        )
       })
+      
+
     }
   })
 }
