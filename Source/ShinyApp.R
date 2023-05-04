@@ -802,7 +802,7 @@ server <- function(input, output, session) {
             panel.background = element_rect(fill = "white")
           ) +
           labs(title = paste0(selected_player$Name[1]),
-               subtitle = paste0("Percentile Rank vs ", selected_player$Position[1],"s", " | 2022/2023 Season"),
+               subtitle = paste0("Percentile Rank vs ", selected_player$Position[1],"s in top 5 leagues", " | 2022/2023 Season"),
                caption = "Data from FBref via worldfootballR | https://fbref.com/en/",
                x = NULL,
                y = NULL)
