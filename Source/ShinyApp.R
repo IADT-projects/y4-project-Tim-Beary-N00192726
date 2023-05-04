@@ -687,7 +687,8 @@ server <- function(input, output, session) {
             width = 1,
             alpha = 0,
             color = "black",
-            size = 2
+            size = 2,
+            show.legend = FALSE
           ) +
           scale_y_continuous(limits = c(0, 100)) +
           scale_x_discrete(labels = function(x) str_wrap(x, width = 18)) +
@@ -700,7 +701,7 @@ server <- function(input, output, session) {
           geom_label(
             color = "gray20",
             fill = "oldlace",
-            size = 2.5,
+            size = 4,
             fontface = "bold",
             show.legend = FALSE
           ) +
@@ -708,13 +709,13 @@ server <- function(input, output, session) {
           theme(
             plot.title = element_text(
               hjust = .5,
-              colour = "gray20",
-              size = 16
+              colour = "black",
+              size = 16,
+              face = "bold"
             ),
             plot.subtitle = element_text(
               hjust = .5,
               colour = "black",
-              face = "bold",
               size = 16
             ),
             panel.grid = element_blank(),
@@ -728,8 +729,9 @@ server <- function(input, output, session) {
             panel.background = element_rect(fill = "white")
           ) +
           labs(
-            title = selected_player$Name[1],
-            subtitle = compare_player$Name[1],
+            title = paste0(selected_player$Name[1], " vs ", compare_player$Name[1]),
+            subtitle = paste0("Percentile Rank vs ", selected_player$Position[1],"s", " | 2022/2023 Season"),
+            caption = "Data from FBref via worldfootballR | https://fbref.com/en/",
             x = NULL,
             y = NULL
           )
@@ -752,16 +754,16 @@ server <- function(input, output, session) {
                    width = 1,
                    stat = "identity") +
           scale_y_continuous(limits = c(0, 100)) +
-          scale_x_discrete(labels = function(x) str_wrap(x, width = 18)) +
-          coord_curvedpolar() +
+          scale_x_discrete(labels = function(x) str_wrap(x, width = 9)) +
+          coord_polar() +
           geom_hline(yintercept = seq(0, 100, by = 100),
-                     linewidth = 1) +
+                     linewidth = 0.5) +
           geom_vline(xintercept = seq(.5, 15, by = 1),
-                     linewidth = .5) +
+                     linewidth = .2) +
           geom_label(
             color = "gray20",
             fill = "oldlace",
-            size = 2.5,
+            size = 4,
             fontface = "bold",
             show.legend = FALSE
           ) +
@@ -769,7 +771,7 @@ server <- function(input, output, session) {
           theme(
             plot.title = element_text(
               hjust = .5,
-              colour = "gray20",
+              colour = "black",
               face = "bold",
               size = 16
             ),
@@ -788,7 +790,9 @@ server <- function(input, output, session) {
             ),
             panel.background = element_rect(fill = "white")
           ) +
-          labs(title = selected_player$Name[1],
+          labs(title = paste0(selected_player$Name[1]),
+               subtitle = paste0("Percentile Rank vs ", selected_player$Position[1],"s", " | 2022/2023 Season"),
+               caption = "Data from FBref via worldfootballR | https://fbref.com/en/",
                x = NULL,
                y = NULL)
       })
