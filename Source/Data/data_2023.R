@@ -275,13 +275,13 @@ write.csv(players_per90_2023, "Data/players_per90_2023.csv")
 forwards_stats <- players_per90_2023 |>
   filter(Position == "Forward") |>
   filter(`Minutes Played` >= 450) |>
-  gather(Statistic, Value, -Name, -Position)
+  gather(Statistic, Value, -Name, -Position, -Comp)
 
 forwards_percentiles <- players_per90_2023 |>
   filter(Position == "Forward") |>
   filter(`Minutes Played` >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
-  gather(Statistic, percentile, -Name, -Position)
+  gather(Statistic, percentile, -Name, -Position, -Comp)
 
 forwards_stats$index <- 1:nrow(forwards_stats)
 forwards_percentiles$index <- 1:nrow(forwards_percentiles)
@@ -295,7 +295,6 @@ forwards_scouting_reports <-
     Statistic != "index",
     Statistic != "Age",
     Statistic != "Squad",
-    Statistic != "Comp",
     Statistic != "Nation",
     Statistic != "Url"
   )
@@ -303,13 +302,13 @@ forwards_scouting_reports <-
 midfielders_stats <- players_per90_2023 |>
   filter(Position == "Midfielder") |>
   filter(`Minutes Played` >= 450) |>
-  gather(Statistic, Value, -Name, -Position)
+  gather(Statistic, Value, -Name, -Position, -Comp)
 
 midfielders_percentiles <- players_per90_2023 |>
   filter(Position == "Midfielder") |>
   filter(`Minutes Played` >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
-  gather(Statistic, percentile, -Name, -Position)
+  gather(Statistic, percentile, -Name, -Position, -Comp)
 
 midfielders_stats$index <- 1:nrow(midfielders_stats)
 midfielders_percentiles$index <- 1:nrow(midfielders_percentiles)
@@ -323,7 +322,6 @@ midfielders_scouting_reports <-
     Statistic != "index",
     Statistic != "Age",
     Statistic != "Squad",
-    Statistic != "Comp",
     Statistic != "Nation",
     Statistic != "Url"
   )
@@ -331,13 +329,13 @@ midfielders_scouting_reports <-
 centrebacks_stats <- players_per90_2023 |>
   filter(Position == "Centre-Back") |>
   filter(`Minutes Played` >= 450) |>
-  gather(Statistic, Value, -Name, -Position)
+  gather(Statistic, Value, -Name, -Position, -Comp)
 
 centrebacks_percentiles <- players_per90_2023 |>
   filter(Position == "Centre-Back") |>
   filter(`Minutes Played` >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
-  gather(Statistic, percentile, -Name, -Position)
+  gather(Statistic, percentile, -Name, -Position, -Comp)
 
 centrebacks_stats$index <- 1:nrow(centrebacks_stats)
 centrebacks_percentiles$index <- 1:nrow(centrebacks_percentiles)
@@ -351,7 +349,6 @@ centrebacks_scouting_reports <-
     Statistic != "index",
     Statistic != "Age",
     Statistic != "Squad",
-    Statistic != "Comp",
     Statistic != "Nation",
     Statistic != "Url"
   )
@@ -359,13 +356,13 @@ centrebacks_scouting_reports <-
 fullbacks_stats <- players_per90_2023 |>
   filter(Position == "Full-Back") |>
   filter(`Minutes Played` >= 450) |>
-  gather(Statistic, Value, -Name, -Position)
+  gather(Statistic, Value, -Name, -Position, -Comp)
 
 fullbacks_percentiles <- players_per90_2023 |>
   filter(Position == "Full-Back") |>
   filter(`Minutes Played` >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
-  gather(Statistic, percentile, -Name, -Position)
+  gather(Statistic, percentile, -Name, -Position, -Comp)
 
 fullbacks_stats$index <- 1:nrow(fullbacks_stats)
 fullbacks_percentiles$index <- 1:nrow(fullbacks_percentiles)
@@ -379,7 +376,6 @@ fullbacks_scouting_reports <-
     Statistic != "index",
     Statistic != "Age",
     Statistic != "Squad",
-    Statistic != "Comp",
     Statistic != "Nation",
     Statistic != "Url"
   )
@@ -387,13 +383,13 @@ fullbacks_scouting_reports <-
 wingers_attmids_stats <- players_per90_2023 |>
   filter(Position == "Winger" | Position == "Attacking Midfield") |>
   filter(`Minutes Played` >= 450) |>
-  gather(Statistic, Value, -Name, -Position)
+  gather(Statistic, Value, -Name, -Position, -Comp)
 
 wingers_attmids_percentiles <- players_per90_2023 |>
   filter(Position == "Winger" | Position == "Attacking Midfield") |>
   filter(`Minutes Played` >= 450) |>
   mutate(across(where(is.numeric), ~ round(cume_dist(.), 2))) |>
-  gather(Statistic, percentile, -Name, -Position)
+  gather(Statistic, percentile, -Name, -Position, -Comp)
 
 wingers_attmids_stats$index <- 1:nrow(wingers_attmids_stats)
 wingers_attmids_percentiles$index <-
@@ -408,7 +404,6 @@ wingers_attmids_scouting_reports <-
     Statistic != "index",
     Statistic != "Age",
     Statistic != "Squad",
-    Statistic != "Comp",
     Statistic != "Nation",
     Statistic != "Url"
   )

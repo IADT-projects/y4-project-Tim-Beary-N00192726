@@ -149,6 +149,14 @@ ui <- navbarPage(
            sidebarLayout(
              sidebarPanel(
                selectizeInput(
+                 "pizzaComp",
+                 "Select League:",
+                 choices = unique(player_data_2023$Comp),
+                 selected = c(player_data_2023$Comp),
+                 multiple = TRUE,
+                 options = list(plugins = list('remove_button'))
+               ),
+               selectizeInput(
                  "pizzaPosition",
                  "Select Position:",
                  choices = NULL,
@@ -460,16 +468,19 @@ server <- function(input, output, session) {
   
   
   
-  selected_player <- scouting_reports_2023
+  selected_comp <- reactive({
+    scouting_reports_2023[scouting_reports_2023$Comp %in% input$pizzaComp,]
+  })
+  
   
   updateSelectizeInput(session,
                        "pizzaPosition",
-                       choices = unique(selected_player$Position),
+                       choices = unique(scouting_reports_2023$Position),
                        selected = "",
                        server = TRUE)
   
   selected_player_position <- reactive({
-    selected_player[selected_player$Position %in% input$pizzaPosition,]
+    selected_comp()[selected_comp()$Position %in% input$pizzaPosition,]
   })
   
   
