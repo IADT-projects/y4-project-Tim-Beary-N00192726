@@ -5,10 +5,10 @@ account: tim-beary
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8948806
-bundleId: 7176601
+bundleId: 7161540
 url: https://tim-beary.shinyapps.io/ScoutingPlayerswithData/
-when: 1683255984.67934
-lastSyncTime: 1683255984.67935
+when: 1682988611.78387
+lastSyncTime: 1682988611.78387
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: README.md
