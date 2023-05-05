@@ -1,0 +1,14 @@
+name: ScoutingPlayerswithData
+title: ScoutingPlayerswithData
+username:
+account: tim-beary
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8948806
+bundleId: 7176601
+url: https://tim-beary.shinyapps.io/ScoutingPlayerswithData/
+when: 1683255984.67934
+lastSyncTime: 1683255984.67935
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: README.md
