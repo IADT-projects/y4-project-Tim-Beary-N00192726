@@ -200,10 +200,10 @@ ui <- navbarPage(
              ),
              mainPanel(
                (plotOutput(
-               "radarChart", height = "80vh"
+               "pizzaChart", height = "80vh"
              )),
              conditionalPanel(
-               condition = "output.radarChart",
+               condition = "output.pizzaChart",
                downloadButton("save", "Download Plot")
              )
              )
@@ -427,17 +427,11 @@ server <- function(input, output, session) {
                  text = "Name"
                )) +
         geom_point() +
-        geom_vline(xintercept = mean(reactive_player_data()[,input$x], na.rm = TRUE), linetype = "dashed") +
-        geom_hline(yintercept = mean(reactive_player_data()[,input$y], na.rm = TRUE), linetype = "dashed") +
         geom_point(data = highlight_player(),
                    color = "#ff6d00",
                    size = 5) +
-        # geom_text(
-        #   data = highlight_player(),
-        #   aes(label = highlight_player()$Name),
-        #   color = "#ff6d00",
-        #   nudge_y = 0.90,
-        # )  +
+        geom_vline(xintercept = mean(reactive_player_data()[,input$x], na.rm = TRUE), linetype = "dashed") +
+        geom_hline(yintercept = mean(reactive_player_data()[,input$y], na.rm = TRUE), linetype = "dashed") +
         ggtitle("Football Scatter Plot") +
         xlab(input$x) +
         ylab(input$y)
@@ -457,11 +451,6 @@ server <- function(input, output, session) {
     
     output$dt1 = renderDataTable(
       dataTablePlayers(),
-      # extensions = "Buttons",
-      # options = list(
-      #   buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-      #   dom = 'Bfrtip'
-      # )
     )
   })
   
@@ -491,7 +480,7 @@ server <- function(input, output, session) {
       ggplotly(p, tooltip = c("name", "year", "team", "x", "y"))
       
     })
-    output$saveData <- downloadHandler(
+    output$saveHistoricalData <- downloadHandler(
       filename = function(){
         paste('Player Data','.csv',sep='')
       },
@@ -715,7 +704,7 @@ server <- function(input, output, session) {
     }
     
     if (input$multi_select && !is.null(input$player_comparison)) {
-      output$radarChart <- renderPlot({
+      output$pizzaChart <- renderPlot({
         color1 <- "#008a71"
         color2 <- "#0362cc"
         color3 <- "#ffa602"
@@ -801,7 +790,7 @@ server <- function(input, output, session) {
       })
       
     } else {
-      output$radarChart <- renderPlot({
+      output$pizzaChart <- renderPlot({
         color1 <- "#008a71"
         color2 <- "#0362cc"
         color3 <- "#ffa602"
