@@ -430,3 +430,4 @@ complete_scouting_reports$percentile <-
 scouting_reports_2023 <- complete_scouting_reports
 
 write.csv(scouting_reports_2023, "Data/scouting_reports_2023.csv")
+

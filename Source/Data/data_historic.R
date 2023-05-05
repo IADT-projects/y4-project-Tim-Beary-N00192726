@@ -7,7 +7,7 @@ library(worldfootballR)
 
 
 player_standard <- load_fb_big5_advanced_season_stats(
-  season_end_year = 2018:2022,
+  season_end_year = 2018:2023,
   stat_type = "standard",
   team_or_player = "player"
 )
@@ -42,7 +42,7 @@ player_standard_filtered <- player_standard |>
 
 
 player_shooting <- load_fb_big5_advanced_season_stats(
-  season_end_year = 2018:2022,
+  season_end_year = 2018:2023,
   stat_type = "shooting",
   team_or_player = "player"
 )
@@ -60,7 +60,7 @@ player_shooting_filtered <- player_shooting |>
   )
 
 player_passing <- load_fb_big5_advanced_season_stats(
-  season_end_year = 2018:2022,
+  season_end_year = 2018:2023,
   stat_type = "passing",
   team_or_player = "player"
 )
@@ -71,7 +71,7 @@ player_passing_filtered <- player_passing |>
   select(index, Cmp_Total, Att_Total, Cmp_percent_Total, PrgP, PrgDist_Total, xA, KP,  Final_Third, PPA, CrsPA)
 
 player_gsca <- load_fb_big5_advanced_season_stats(
-  season_end_year = 2018:2022,
+  season_end_year = 2018:2023,
   stat_type = "gca",
   team_or_player = "player"
 )
@@ -82,7 +82,7 @@ player_gsca_filtered <- player_gsca |>
   select(index, SCA_SCA, GCA_GCA)
 
 player_defense <- load_fb_big5_advanced_season_stats(
-  season_end_year = 2018:2022,
+  season_end_year = 2018:2023,
   stat_type = "defense",
   team_or_player = "player"
 )
@@ -102,7 +102,7 @@ player_defense_filtered <- player_defense |>
   )
 
 player_possession <- load_fb_big5_advanced_season_stats(
-  season_end_year = 2018:2022,
+  season_end_year = 2018:2023,
   stat_type = "possession",
   team_or_player = "player"
 )
@@ -127,7 +127,7 @@ player_possession_filtered <- player_possession |>
   )
 
 player_misc <- load_fb_big5_advanced_season_stats(
-  season_end_year = 2018:2022,
+  season_end_year = 2018:2023,
   stat_type = "misc",
   team_or_player = "player"
 )

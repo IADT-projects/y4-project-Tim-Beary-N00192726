@@ -32,24 +32,24 @@ ui <- navbarPage(
         ),
         selectizeInput(
           "Comp",
-          "Select League:",
+          "Select Leagues:",
           choices = unique(player_data_2023$Comp),
           selected = c(player_data_2023$Comp),
           multiple = TRUE,
           options = list(plugins = list('remove_button'))
           
         ),
-        selectInput("x", "Select x axis:",
+        selectInput("x", "Select Statistic for X Axis:",
                     c(colnames(player_data_2023[12:58])),
                     selected = ""),
-        selectInput("y", "Select y axis:",
+        selectInput("y", "Select Statistic for Y Axis:",
                     c(colnames(player_data_2023[12:58])),
                     selected = ""),
         radioButtons("radio", "Stat Type:",
                      choices = c("Totals", "Per 90s")),
         sliderInput(
           inputId = "slider",
-          label = "Minutes",
+          label = "Minutes Played",
           min = 1,
           max = max(player_data_2023$Minutes.Played),
           value = c(450, max(player_data_2023$Minutes.Played))
@@ -63,7 +63,7 @@ ui <- navbarPage(
         ),
         selectizeInput(
           "highlight",
-          "Search a player to hightlight: (in red)",
+          "Search a player to hightlight: (in orange)",
           choices = NULL,
           selected = "",
           multiple = TRUE,
@@ -106,17 +106,17 @@ ui <- navbarPage(
         ),
         selectizeInput(
           "Comp2",
-          "Select League:",
+          "Select Leagues:",
           choices = unique(player_data_historic$Comp),
           selected = c(player_data_historic$Comp),
           multiple = TRUE,
           options = list(plugins = list('remove_button'))
         ),
-        selectInput("x2", "Select x axis:",
+        selectInput("x2", "Select Statistic for X Axis:",
                     c(colnames(player_data_historic[13:58])),
                     
                     selected = NULL),
-        selectInput("y2", "Select y axis:",
+        selectInput("y2", "Select Statistic for Y Axis:",
                     c(colnames(player_data_historic[13:58])),
                     
                     selected = NULL),
@@ -124,7 +124,7 @@ ui <- navbarPage(
                      choices = c("Totals", "Per 90s")),
         sliderInput(
           inputId = "slider2",
-          label = "Minutes",
+          label = "Minutes Played",
           min = 1,
           max = max(player_data_historic$Minutes.Played),
           value = c(450, max(player_data_historic$Minutes.Played))
@@ -138,7 +138,7 @@ ui <- navbarPage(
         ),
         selectizeInput(
           "highlight1",
-          "Search a player to hightlight: (in red)",
+          "Search a player to hightlight: (in orange)",
           choices = NULL,
           selected = "",
           multiple = TRUE,
@@ -196,7 +196,7 @@ ui <- navbarPage(
                    selected = ""
                  ),
                ),
-               actionButton("submit1", "Submit"),
+               actionButton("submit1", "Update"),
              ),
              mainPanel(
                (plotOutput(
@@ -204,7 +204,7 @@ ui <- navbarPage(
              )),
              conditionalPanel(
                condition = "output.pizzaChart",
-               downloadButton("save", "Download Plot")
+               downloadButton("save", "Download Chart")
              )
              )
            ))
@@ -732,7 +732,7 @@ server <- function(input, output, session) {
             show.legend = FALSE
           ) +
           scale_y_continuous(limits = c(0, 100)) +
-          scale_x_discrete(labels = function(x) str_wrap(x, width = 18)) +
+          scale_x_discrete(labels = function(x) str_wrap(x, width = 9)) +
           coord_polar() +
           geom_hline(yintercept = seq(0, 100, by = 100),
                      linewidth = .5) +
@@ -770,7 +770,7 @@ server <- function(input, output, session) {
             panel.background = element_rect(fill = "white")
           ) +
           labs(
-            title = paste0(selected_player$Name[1], " vs ", compare_player$Name[1]),
+            title = paste0(selected_player$Name[1], " vs ", compare_player$Name[1], " (in black)"),
             subtitle = paste0("Percentile Rank vs ", selected_player$Position[1],"s", " | 2022/2023 Season"),
             caption = "Data from FBref via worldfootballR | https://fbref.com/en/",
             x = NULL,
